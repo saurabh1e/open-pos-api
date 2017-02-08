@@ -5,7 +5,7 @@ from src.user.models import User, Role, PermissionSet, UserRole, RetailBrand, Re
     Address, Locality, City, Customer
 from src.orders.models import OrderDiscount, OrderItemTax, OrderItem, Order, Discount
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
-    DistributorBill, Tag, Brand
+    DistributorBill, Tag, Brand, Salt, AddOn, Combo
 
 
 class MyModel(AdminImportExport):
@@ -32,6 +32,9 @@ admin.add_view(MyModel(City, session=db.session))
 
 admin.add_view(MyModel(ProductTax, session=db.session))
 admin.add_view(MyModel(Tag, session=db.session))
+admin.add_view(MyModel(AddOn, session=db.session))
+admin.add_view(MyModel(Combo, session=db.session))
+admin.add_view(MyModel(Salt, session=db.session))
 admin.add_view(MyModel(Brand, session=db.session))
 admin.add_view(MyModel(Tax, session=db.session))
 admin.add_view(MyModel(Product, session=db.session))
