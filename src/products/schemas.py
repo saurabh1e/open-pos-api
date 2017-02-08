@@ -1,5 +1,5 @@
 from src import ma, BaseSchema
-from .models import Brand, Distributor, DistributorBill, Product, Tag, Stock, ProductTax, Tax
+from .models import Brand, Distributor, DistributorBill, Product, Tag, Stock, ProductTax, Tax, Combo, AddOn, Salt
 
 
 class BrandSchema(BaseSchema):
@@ -80,6 +80,7 @@ class ProductSchema(BaseSchema):
     available_stock = ma.Integer()
     brand_name = ma.String(dump_oly=True)
     tags = ma.Nested('TagSchema', many=True)
+    salts = ma.Nested('SaltSchema', many=True)
     _links = ma.Hyperlinks(
         {
             'distributor': ma.URLFor('pos.distributor_view', slug='<distributor_id>'),
@@ -111,3 +112,22 @@ class StockSchema(BaseSchema):
     # distributor_bill = ma.Nested('DistributorBillSchema', many=False)
     # product = ma.Nested('ProductSchema', many=False)
     # order_items = ma.Nested('OrderItemSchema', many=True)
+
+
+class SaltSchema(BaseSchema):
+    class Meta:
+        model = Salt
+        exclude = ('created_on', 'updated_on', 'products')
+
+
+class ComboSchema(BaseSchema):
+    class Meta:
+        model = Combo
+        exclude = ('created_on', 'updated_on', 'products')
+
+
+class AddOnSchema(BaseSchema):
+    class Meta:
+        model = AddOn
+        exclude = ('created_on', 'updated_on', 'products')
+

@@ -1,8 +1,8 @@
 from src.utils import ModelResource, AssociationModelResource, operators as ops
 from .schemas import ProductSchema, TaxSchema, StockSchema, BrandSchema, \
-    DistributorBillSchema, DistributorSchema, ProductTaxSchema, TagSchema
+    DistributorBillSchema, DistributorSchema, ProductTaxSchema, TagSchema, ComboSchema, SaltSchema, AddOnSchema
 from .models import Product, Tax, Stock, Brand, \
-    DistributorBill, Distributor, ProductTax, ProductType, Tag
+    DistributorBill, Distributor, ProductTax, ProductType, Tag, Combo, AddOn, Salt
 
 
 class ProductResource(ModelResource):
@@ -142,3 +142,34 @@ class TaxResource(ModelResource):
     def has_add_permission(self, request, obj):
 
         return True
+
+
+class SaltResource(ModelResource):
+    model = Salt
+    schema = SaltSchema
+
+    filters = {
+        'name': [ops.Equal, ops.Contains],
+        'retail_shop_id': [ops.Equal, ops.In]
+    }
+
+
+class AddOnResource(ModelResource):
+    model = AddOn
+    schema = AddOnSchema
+
+    filters = {
+        'name': [ops.Equal, ops.Contains],
+        'retail_shop_id': [ops.Equal, ops.In]
+    }
+
+
+class ComboResource(ModelResource):
+    model = Combo
+    schema = ComboSchema
+
+    filters = {
+        'name': [ops.Equal, ops.Contains],
+        'retail_shop_id': [ops.Equal, ops.In]
+    }
+

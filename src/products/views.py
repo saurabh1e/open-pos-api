@@ -1,6 +1,6 @@
 from src import BaseView, AssociationView
 from .resources import BrandResource, DistributorBillResource, DistributorResource, ProductResource, \
-    ProductTaxResource, StockResource, TaxResource, TagResource
+    ProductTaxResource, StockResource, TaxResource, TagResource, ComboResource, AddOnResource, SaltResource
 from src import api
 
 
@@ -37,6 +37,21 @@ class TaxView(BaseView):
 @api.register()
 class BrandView(BaseView):
     resource = BrandResource
+
+
+@api.register()
+class ComboView(BaseView):
+    resource = ComboResource
+
+
+@api.register()
+class AddOnView(BaseView):
+    resource = AddOnResource
+
+
+@api.register()
+class SaltView(BaseView):
+    resource = SaltResource
 
 
 @api.register()
