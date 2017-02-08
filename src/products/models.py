@@ -85,9 +85,9 @@ class ProductTag(db.Model, BaseMixin, ReprMixin):
 class Product(db.Model, BaseMixin, ReprMixin):
 
     name = db.Column(db.String(20), unique=False, nullable=False)
-    description = db.Column(db.Text())
     min_stock = db.Column(db.SmallInteger, nullable=False)
     auto_discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
+    description = db.Column(db.JSON)
 
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
     distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'))
@@ -100,6 +100,9 @@ class Product(db.Model, BaseMixin, ReprMixin):
 
     stocks = db.relationship('Stock', uselist=True, cascade="all, delete-orphan", lazy='dynamic')
     distributor = db.relationship('Distributor', back_populates='products')
+    combos = db.relationship('Combo', back_populates='products', secondary='combo_product')
+    salts = db.relationship('Salt', back_populates='products', secondary='product_salt')
+    add_ons = db.relationship('AddOn', back_populates='products', secondary='product_add_on')
 
     @hybrid_property
     def available_stock(self):
@@ -125,6 +128,25 @@ class Product(db.Model, BaseMixin, ReprMixin):
     @hybrid_property
     def brand_name(self):
         return self.brand.name
+
+
+class Salt(db.Model, BaseMixin, ReprMixin):
+
+    name = db.Column(db.String(127), unique=True, nullable=False)
+    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+
+    products = db.relationship('Product', back_populates='salts', secondary='product_salt')
+
+
+class ProductSalt(db.Model, BaseMixin, ReprMixin):
+
+    __repr_fields__ = ['salt_id', 'product_id']
+
+    salt_id = db.Column(db.Integer, db.ForeignKey('salt.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+
+    salt = db.relationship('Salt', foreign_keys=[salt_id])
+    product = db.relationship('Product', foreign_keys=[product_id])
 
 
 class Stock(db.Model, BaseMixin, ReprMixin):
@@ -165,4 +187,36 @@ class Stock(db.Model, BaseMixin, ReprMixin):
 
 
 class Combo(db.Model, BaseMixin, ReprMixin):
+
     name = db.Column(db.String(55), nullable=False)
+    products = db.relationship('Product', back_populates='combos', secondary='combo_product')
+
+
+class ComboProduct(db.Model, BaseMixin, ReprMixin):
+
+    __repr_fields__ = ['combo_id', 'product_id']
+
+    combo_id = db.Column(db.Integer, db.ForeignKey('combo.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+
+    combo = db.relationship('Combo', foreign_keys=[combo_id])
+    product = db.relationship('Product', foreign_keys=[product_id])
+
+
+class AddOn(db.Model, BaseMixin, ReprMixin):
+
+    name = db.Column(db.String(127), unique=True, nullable=False)
+    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+
+    products = db.relationship('Product', back_populates='add_ons', secondary='product_add_on')
+
+
+class ProductAddOn(db.Model, BaseMixin, ReprMixin):
+
+    __repr_fields__ = ['add_on_id', 'product_id']
+
+    add_on_id = db.Column(db.Integer, db.ForeignKey('add_on.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+
+    add_on = db.relationship('AddOn', foreign_keys=[add_on_id])
+    product = db.relationship('Product', foreign_keys=[product_id])
