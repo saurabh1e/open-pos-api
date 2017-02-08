@@ -117,17 +117,20 @@ class StockSchema(BaseSchema):
 class SaltSchema(BaseSchema):
     class Meta:
         model = Salt
-        exclude = ('created_on', 'updated_on', 'products')
+        exclude = ('created_on', 'updated_on', 'products', 'retail_shop')
+    retail_shop_id = ma.Integer()
 
 
 class ComboSchema(BaseSchema):
     class Meta:
         model = Combo
-        exclude = ('created_on', 'updated_on', 'products')
+        exclude = ('created_on', 'updated_on', 'products', 'retail_shop')
+    retail_shop_id = ma.Integer()
 
 
 class AddOnSchema(BaseSchema):
     class Meta:
         model = AddOn
-        exclude = ('created_on', 'updated_on', 'products')
+        exclude = ('created_on', 'updated_on', 'products', 'retail_shop')
+    retail_shop_id = ma.Integer()
 

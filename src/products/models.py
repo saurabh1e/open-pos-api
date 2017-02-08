@@ -136,6 +136,7 @@ class Salt(db.Model, BaseMixin, ReprMixin):
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
 
     products = db.relationship('Product', back_populates='salts', secondary='product_salt')
+    retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False)
 
 
 class ProductSalt(db.Model, BaseMixin, ReprMixin):
