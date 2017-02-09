@@ -79,8 +79,8 @@ class ProductSchema(BaseSchema):
     mrp = ma.Integer()
     available_stock = ma.Integer()
     brand_name = ma.String(dump_oly=True)
-    tags = ma.Nested('TagSchema', many=True)
-    salts = ma.Nested('SaltSchema', many=True)
+    tags = ma.Nested('TagSchema', many=True, exclude=('retail_shop_id',))
+    salts = ma.Nested('SaltSchema', many=True, exclude=('retail_shop_id',))
     _links = ma.Hyperlinks(
         {
             'distributor': ma.URLFor('pos.distributor_view', slug='<distributor_id>'),
