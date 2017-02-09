@@ -35,7 +35,8 @@ class Order(db.Model, BaseMixin, ReprMixin):
     items = db.relationship('Item', uselist=True, back_populates='order', lazy='dynamic')
     customer = db.relationship('Customer', foreign_keys=[customer_id])
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id])
-    discounts = db.relationship('Discount', secondary='order_discount')
+    discounts = db.relationship('Discount', secondary='order_discount', uselist=False)
+    denominations = db.relationship('Denomination', secondary='order_denomination', uselist=False)
     current_status = db.relationship('Status', uselist=False, foreign_keys=[current_status_id])
     time_line = db.relationship('Status', secondary='order_status')
 
@@ -128,4 +129,21 @@ class Discount(db.Model, BaseMixin, ReprMixin):
     type = db.Column(db.Enum('PERCENTAGE', 'FIXED', name='varchar'), nullable=False, default='PERCENTAGE')
 
     orders = db.relationship('Order', secondary='order_discount')
+
+
+class Denomination(db.Model, BaseMixin, ReprMixin):
+
+    value = db.Column(db.SmallInteger, default=0)
+    name = db.Column(db.String, nullable=False, default='zero')
+
+
+class OrderDenomination(db.Model, BaseMixin, ReprMixin):
+
+    __repr_fields__ = ['order_id', 'denomination_id']
+
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    denomination_id = db.Column(db.Integer, db.ForeignKey('denomination.id'), nullable=False)
+
+    order = db.relationship('Order', foreign_keys=[order_id])
+    denomination = db.relationship('Denomination', foreign_keys=[denomination_id])
 
