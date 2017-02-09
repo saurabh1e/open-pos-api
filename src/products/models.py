@@ -2,7 +2,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import and_, func, select, or_
 
 from src import db, BaseMixin, ReprMixin
-from src.orders.models import OrderItem
+from src.orders.models import Item
 
 
 class Brand(db.Model, BaseMixin, ReprMixin):
@@ -167,13 +167,13 @@ class Stock(db.Model, BaseMixin, ReprMixin):
 
     distributor_bill = db.relationship('DistributorBill', single_parent=True, back_populates='purchased_items')
     product = db.relationship('Product', single_parent=True, foreign_keys=product_id)
-    order_items = db.relationship('OrderItem', uselist=True, back_populates='stock', lazy='dynamic')
+    order_items = db.relationship('Item', uselist=True, back_populates='stock', lazy='dynamic')
 
     @hybrid_property
     def units_sold(self):
 
-        total_sold = self.order_items.with_entities(func.Sum(OrderItem.quantity))\
-            .filter(OrderItem.stock_id == self.id).scalar()
+        total_sold = self.order_items.with_entities(func.Sum(Item.quantity))\
+            .filter(Item.stock_id == self.id).scalar()
         if total_sold:
             if total_sold >= self.units_purchased and not self.is_sold:
                 self.is_sold = True
@@ -184,7 +184,7 @@ class Stock(db.Model, BaseMixin, ReprMixin):
 
     @units_sold.expression
     def units_sold(cls):
-        return select([func.Sum(OrderItem.quantity)]).where(OrderItem.stock_id == cls.id).as_scalar()
+        return select([func.Sum(Item.quantity)]).where(Item.stock_id == cls.id).as_scalar()
 
 
 class Combo(db.Model, BaseMixin, ReprMixin):

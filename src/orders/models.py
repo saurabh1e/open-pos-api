@@ -32,7 +32,7 @@ class Order(db.Model, BaseMixin, ReprMixin):
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id'), nullable=True)
     current_status_id = db.Column(db.Integer, db.ForeignKey('status.id'), nullable=True)
 
-    order_items = db.relationship('OrderItem', uselist=True, back_populates='order', lazy='dynamic')
+    items = db.relationship('Item', uselist=True, back_populates='order', lazy='dynamic')
     customer = db.relationship('Customer', foreign_keys=[customer_id])
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id])
     discounts = db.relationship('Discount', secondary='order_discount')
@@ -50,14 +50,14 @@ class Order(db.Model, BaseMixin, ReprMixin):
 
     @hybrid_property
     def items_count(self):
-        return self.order_items.with_entities(func.Count(OrderItem.id)).scalar()
+        return self.order_items.with_entities(func.Count(Item.id)).scalar()
 
     @items_count.expression
     def items_count(cls):
-        return select([func.Count(OrderItem.id)]).where(OrderItem.order_id == cls.id).as_scalar()
+        return select([func.Count(Item.id)]).where(Item.order_id == cls.id).as_scalar()
 
 
-class OrderItem(db.Model, BaseMixin, ReprMixin):
+class Item(db.Model, BaseMixin, ReprMixin):
 
     __repr_fields__ = ['id', 'order_id', 'product_id']
 
@@ -68,17 +68,15 @@ class OrderItem(db.Model, BaseMixin, ReprMixin):
 
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True)
     stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True)
+    combo_id = db.Column(db.Integer, db.ForeignKey('combo.id'), nullable=True)
 
     product = db.relationship('Product', foreign_keys=[product_id])
-    order = db.relationship('Order', foreign_keys=[order_id], single_parent=True, back_populates='order_items')
-    order_item_taxes = db.relationship('OrderItemTax', uselist=True, cascade='all, delete-orphan',
-                                       back_populates='order_item')
+    order = db.relationship('Order', foreign_keys=[order_id], single_parent=True, back_populates='items')
+    taxes = db.relationship('ItemTax', uselist=True, cascade='all, delete-orphan',
+                            back_populates='item')
+    add_ons = db.relationship('ItemAddOn', uselist=True, cascade='all, delete-orphan',
+                              back_populates='item')
     stock = db.relationship('Stock', foreign_keys=[stock_id], single_parent=True, back_populates='order_items')
-
-    @hybrid_property
-    def taxes(self):
-        return [{'name': i.tax.name, 'amount': i.tax_value*(self.unit_price*self.quantity)/100}
-                for i in self.order_item_taxes]
 
     @hybrid_property
     def total_price(self):
@@ -88,16 +86,29 @@ class OrderItem(db.Model, BaseMixin, ReprMixin):
     def discount_amount(self):
         return float((self.total_price*self.discount)/100)
 
+    @hybrid_property
+    def is_combo(self):
+        return self.combo_id is not None
 
-class OrderItemTax(db.Model, BaseMixin):
+
+class ItemAddOn(db.Model, BaseMixin, ReprMixin):
+
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
+    add_on_id = db.Column(db.Integer, db.ForeignKey('add_on.id'))
+
+    add_on = db.relationship('AddOn', foreign_keys=[add_on_id])
+    item = db.relationship('Item', back_populates='add_ons', foreign_keys=[item_id])
+
+
+class ItemTax(db.Model, BaseMixin):
 
     tax_value = db.Column(db.Float(precision=2))
 
-    order_item_id = db.Column(db.Integer, db.ForeignKey('order_item.id'))
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     tax_id = db.Column(db.Integer, db.ForeignKey('tax.id'))
 
-    tax = db.relationship('Tax', single_parent=True, foreign_keys=[tax_id])
-    order_item = db.relationship('OrderItem', single_parent=True, back_populates='order_item_taxes')
+    tax = db.relationship('Tax', foreign_keys=[tax_id])
+    item = db.relationship('Item', back_populates='taxes', foreign_keys=[item_id])
 
 
 class OrderDiscount(db.Model, BaseMixin, ReprMixin):

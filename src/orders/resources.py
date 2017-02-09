@@ -1,6 +1,6 @@
 from src.utils import ModelResource
-from .models import OrderItem, OrderItemTax, Order, OrderDiscount
-from .schemas import OrderItemSchema, OrderItemTaxSchema, OrderSchema, OrderDiscountSchema
+from .models import Item, ItemAddOn, Order, OrderDiscount, ItemTax, Status
+from .schemas import ItemSchema, ItemTaxSchema, OrderSchema, OrderDiscountSchema, ItemAddOnSchema, StatusSchema
 
 
 class OrderResource(ModelResource):
@@ -23,9 +23,9 @@ class OrderResource(ModelResource):
         return True
 
 
-class OrderItemTaxResource(ModelResource):
-    model = OrderItemTax
-    schema = OrderItemTaxSchema
+class ItemTaxResource(ModelResource):
+    model = ItemTax
+    schema = ItemTaxSchema
 
 
 class OrderDiscountResource(ModelResource):
@@ -33,10 +33,10 @@ class OrderDiscountResource(ModelResource):
     schema = OrderDiscountSchema
 
 
-class OrderItemResource(ModelResource):
+class ItemResource(ModelResource):
 
-    model = OrderItem
-    schema = OrderItemSchema
+    model = Item
+    schema = ItemSchema
 
     filters = {
 
@@ -64,3 +64,14 @@ class OrderItemResource(ModelResource):
     def has_add_permission(self, request, obj):
 
         return True
+
+
+class StatusResource(ModelResource):
+    model = Status
+    schema = StatusSchema
+
+
+class ItemAddOnResource(ModelResource):
+    model = ItemAddOn
+    schema = ItemAddOnSchema
+

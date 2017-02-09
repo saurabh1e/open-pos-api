@@ -3,7 +3,7 @@ from flask_admin_impexp.admin_impexp import AdminImportExport
 from src import admin, db
 from src.user.models import User, Role, PermissionSet, UserRole, RetailBrand, RetailShop, UserRetailShop, \
     Address, Locality, City, Customer
-from src.orders.models import OrderDiscount, OrderItemTax, OrderItem, Order, Discount
+from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
     DistributorBill, Tag, Brand, Salt, AddOn, Combo
 
@@ -45,7 +45,9 @@ admin.add_view(MyModel(Stock, session=db.session))
 
 
 admin.add_view(MyModel(Order, session=db.session))
-admin.add_view(MyModel(OrderItem, session=db.session))
-admin.add_view(MyModel(OrderItemTax, session=db.session))
+admin.add_view(MyModel(Item, session=db.session))
+admin.add_view(MyModel(ItemTax, session=db.session))
+admin.add_view(MyModel(ItemAddOn, session=db.session))
+admin.add_view(MyModel(Status, session=db.session))
 admin.add_view(MyModel(OrderDiscount, session=db.session))
 admin.add_view(MyModel(Discount, session=db.session))

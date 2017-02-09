@@ -1,5 +1,6 @@
 from src import BaseView
-from .resources import OrderDiscountResource, OrderItemResource, OrderResource, OrderItemTaxResource
+from .resources import OrderDiscountResource, ItemResource, OrderResource, ItemTaxResource, StatusResource,\
+    ItemAddOnResource
 from src import api
 
 
@@ -9,8 +10,8 @@ class OrderView(BaseView):
 
 
 @api.register()
-class OrderItemView(BaseView):
-    resource = OrderItemResource
+class ItemView(BaseView):
+    resource = ItemResource
 
 
 @api.register()
@@ -19,5 +20,15 @@ class OrderDiscountView(BaseView):
 
 
 @api.register()
-class OrderItemTaxView(BaseView):
-    resource = OrderItemTaxResource
+class ItemTaxView(BaseView):
+    resource = ItemTaxResource
+
+
+@api.register()
+class ItemAddOnView(BaseView):
+    resource = ItemAddOnResource
+
+
+@api.register()
+class StatusView(BaseView):
+    resource = StatusResource
