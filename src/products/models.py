@@ -87,7 +87,8 @@ class Product(db.Model, BaseMixin, ReprMixin):
     name = db.Column(db.String(20), unique=False, nullable=False)
     min_stock = db.Column(db.SmallInteger, nullable=False)
     auto_discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
-    description = db.Column(db.JSON)
+    description = db.Column(db.JSON, nullable=True)
+    sub_description = db.Column(db.Text(), nullable=True)
 
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
     distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'))
@@ -129,6 +130,13 @@ class Product(db.Model, BaseMixin, ReprMixin):
     def brand_name(self):
         return self.brand.name
 
+    @hybrid_property
+    def similar_products(self):
+        return [i[0] for i in Product.query.with_entities(Product.id)
+                .join(ProductSalt, and_(ProductSalt.product_id == Product.id))
+                .filter(ProductSalt.salt_id.in_([i.id for i in self.salts])).group_by(Product.id)
+                .having(func.Count(func.Distinct(ProductSalt.salt_id)) == len(self.salts)).all()]
+
 
 class Salt(db.Model, BaseMixin, ReprMixin):
 
@@ -152,7 +160,7 @@ class ProductSalt(db.Model, BaseMixin, ReprMixin):
 
 class Stock(db.Model, BaseMixin, ReprMixin):
 
-    __repr_fields__ = ['id', 'product_variation_id']
+    __repr_fields__ = ['id', 'product_id']
 
     purchase_amount = db.Column(db.Float(precision=2))
     selling_amount = db.Column(db.Float(precision=2))
