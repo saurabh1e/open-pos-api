@@ -112,8 +112,7 @@ class Product(db.Model, BaseMixin, ReprMixin):
 
     @hybrid_property
     def available_stocks(self):
-        return self.stocks.filter(and_(or_(Stock.is_sold == False, Stock.is_sold == None),
-                                       Stock.units_sold < Stock.units_purchased)).all()
+        return self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None)).all()
 
     @available_stock.expression
     def available_stock(cls):
