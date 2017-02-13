@@ -26,6 +26,8 @@ class Order(db.Model, BaseMixin, ReprMixin):
     edit_stock = db.Column(db.Boolean(), default=True)
     sub_total = db.Column(db.Float(precision=2), default=0, nullable=True)
     total = db.Column(db.Float(precision=2), default=0, nullable=True)
+    amount_paid = db.Column(db.Float(precision=2), default=0, nullable=True)
+    auto_discount = db.Column(db.Float(precision=2), default=0, nullable=True)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'), nullable=True)
@@ -46,10 +48,6 @@ class Order(db.Model, BaseMixin, ReprMixin):
                     for discount in self.discounts])
 
     @hybrid_property
-    def total_amount(self):
-        return self.total - self.total_discount
-
-    @hybrid_property
     def items_count(self):
         return self.order_items.with_entities(func.Count(Item.id)).scalar()
 
@@ -62,14 +60,18 @@ class Item(db.Model, BaseMixin, ReprMixin):
 
     __repr_fields__ = ['id', 'order_id', 'product_id']
 
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)
     unit_price = db.Column(db.Float(precision=2))
     quantity = db.Column(db.SmallInteger)
     discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
 
+    parent_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True)
     stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True)
     combo_id = db.Column(db.Integer, db.ForeignKey('combo.id'), nullable=True)
+
+    parent = db.relationship('Item', uselist=False, remote_side='Item.id')
+    children = db.relationship('Item', remote_side='Item.parent_id')
 
     product = db.relationship('Product', foreign_keys=[product_id])
     order = db.relationship('Order', foreign_keys=[order_id], single_parent=True, back_populates='items')
@@ -82,6 +84,14 @@ class Item(db.Model, BaseMixin, ReprMixin):
     @hybrid_property
     def total_price(self):
         return float(self.unit_price * self.quantity)
+
+    @hybrid_property
+    def discounted_total_price(self):
+        return float(self.discounted_unit_price * self.quantity)
+
+    @hybrid_property
+    def discounted_unit_price(self):
+        return float(self.unit_price-(self.unit_price * self.discount)/100)
 
     @hybrid_property
     def discount_amount(self):
@@ -104,7 +114,7 @@ class ItemAddOn(db.Model, BaseMixin, ReprMixin):
 class ItemTax(db.Model, BaseMixin):
 
     tax_value = db.Column(db.Float(precision=2))
-
+    tax_amount = db.Column(db.Float(precision=2))
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     tax_id = db.Column(db.Integer, db.ForeignKey('tax.id'))
 

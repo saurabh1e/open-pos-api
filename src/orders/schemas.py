@@ -30,11 +30,14 @@ class ItemSchema(BaseSchema):
     order_id = ma.Integer()
     stock_id = ma.Integer()
     discount = ma.Float()
+    discounted_total_price = ma.Float(dump_only=True)
+    discounted_unit_price = ma.Float(dump_only=True)
     total_price = ma.Float(dump_only=True)
     discount_amount = ma.Float(dump_only=True)
-
+    children = ma.Nested('self', many=True, default=None, load=True, exclude=('parent',))
     product = ma.Nested('ProductSchema', many=False,
-                        only=('id', 'name', 'description', 'product', 'product_type'))
+                        only=('id', 'name', 'sub_description'))
+    combo = ma.Nested('ComboSchema', many=False, only=('id', 'name'))
     taxes = ma.Nested('ItemTaxSchema', many=True, exclude=('item',))
 
 
