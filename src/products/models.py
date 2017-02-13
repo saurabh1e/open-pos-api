@@ -122,7 +122,7 @@ class Product(db.Model, BaseMixin, ReprMixin):
     @hybrid_property
     def mrp(self):
         mrp = self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None))\
-            .with_entities(Stock.selling_amount).order_by(-Stock.selling_amount).first()
+            .with_entities(Stock.selling_amount).order_by(Stock.id).first()
         return mrp[0] if mrp else 0
 
     @hybrid_property
