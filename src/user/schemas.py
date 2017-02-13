@@ -1,6 +1,6 @@
 from src import ma, BaseSchema
 from .models import User, Role, PermissionSet, UserRole, RetailShop, RetailBrand, UserRetailShop, \
-    Customer, Address, Locality, City
+    Customer, Address, Locality, City, RegistrationDetail
 
 
 class UserSchema(BaseSchema):
@@ -66,6 +66,7 @@ class RetailShopSchema(BaseSchema):
     total_sales = ma.Dict()
     address = ma.Nested('AddressSchema', many=False)
     localities = ma.Nested('LocalitySchema', many=True)
+    registration_details = ma.Nested('RegistrationDetailSchema', many=True)
 
 
 class RetailBrandSchema(BaseSchema):
@@ -89,10 +90,10 @@ class CustomerSchema(BaseSchema):
 class AddressSchema(BaseSchema):
     class Meta:
         model = Address
-        exclude = ('created_on', 'updated_on')
+        exclude = ('created_on', 'updated_on', '')
 
-    locality_id = ma.Integer(load=True)
-    locality = ma.Nested('LocalitySchema', many=False, load=True)
+    locality_id = ma.Integer(load_only=True)
+    locality = ma.Nested('LocalitySchema', many=False, load=True, exclude=('city_id',))
 
 
 class LocalitySchema(BaseSchema):
@@ -108,3 +109,12 @@ class CitySchema(BaseSchema):
     class Meta:
         model = City
         exclude = ('created_on', 'updated_on')
+
+
+class RegistrationDetailSchema(BaseSchema):
+    class Meta:
+        model = RegistrationDetail
+        exclude = ('created_on', 'updated_on', 'retail_shop')
+
+
+
