@@ -19,7 +19,7 @@ class BaseMixin(object):
 
     __mapper_args__ = {'always_refresh': True}
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, index=True)
     created_on = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
     updated_on = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp())
 
