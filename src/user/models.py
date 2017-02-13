@@ -57,6 +57,15 @@ class RetailBrand(db.Model, BaseMixin, ReprMixin):
     addresses = db.relationship('Address', secondary='retail_brand_address')
 
 
+class RegistrationDetail(db.Model, BaseMixin, ReprMixin):
+
+    name = db.Column(db.String(55), nullable=False)
+    value = db.Column(db.String(20), nullable=False)
+
+    retail_shop_id = db.Column(db.Integer(), db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], back_populates='registration_details')
+
+
 class RetailShop(db.Model, BaseMixin, ReprMixin):
     name = db.Column(db.String(80), unique=False)
     identity = db.Column(db.String(80), unique=False)
@@ -70,6 +79,7 @@ class RetailShop(db.Model, BaseMixin, ReprMixin):
     orders = db.relationship('Order', uselist=True, back_populates='retail_shop', lazy='dynamic')
     address = db.relationship('Address', foreign_keys=[address_id], uselist=False)
     localities = db.relationship('Locality', secondary='retail_shop_locality')
+    registration_details = db.relationship('RegistrationDetail', uselist=True, lazy='dynamic')
 
     @hybrid_property
     def total_sales(self):
