@@ -10,6 +10,8 @@ class ProductResource(ModelResource):
     model = Product
     schema = ProductSchema
 
+    optional = ('distributor', 'brand', 'retail_shop', 'stocks', 'similar_products')
+
     filters = {
         'available_stocks': [ops.Equal, ops.Greater],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -34,6 +36,8 @@ class TagResource(ModelResource):
     model = Tag
     schema = TagSchema
 
+    optional = ('products', 'retail_shop')
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -50,6 +54,8 @@ class StockResource(ModelResource):
 
     model = Stock
     schema = StockSchema
+
+    optional = ('products', 'retail_shop')
 
     filters = {
         'units_available': [ops.Equal]
@@ -80,6 +86,8 @@ class DistributorResource(ModelResource):
     model = Distributor
     schema = DistributorSchema
 
+    optional = ('products', 'retail_shop')
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -108,6 +116,8 @@ class BrandResource(ModelResource):
     model = Brand
     schema = BrandSchema
 
+    optional = ('products', 'retail_shop')
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -118,6 +128,7 @@ class TaxResource(ModelResource):
 
     model = Tax
     schema = TaxSchema
+    optional = ('products', 'retail_shop')
 
     filters = {
         'name': [ops.Equal, ops.Contains],
@@ -148,6 +159,8 @@ class SaltResource(ModelResource):
     model = Salt
     schema = SaltSchema
 
+    optional = ('products', 'retail_shop')
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -158,6 +171,8 @@ class AddOnResource(ModelResource):
     model = AddOn
     schema = AddOnSchema
 
+    optional = ('products', 'retail_shop')
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -167,6 +182,8 @@ class AddOnResource(ModelResource):
 class ComboResource(ModelResource):
     model = Combo
     schema = ComboSchema
+
+    optional = ('products', 'retail_shop')
 
     filters = {
         'name': [ops.Equal, ops.Contains],

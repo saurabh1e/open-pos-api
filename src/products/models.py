@@ -131,10 +131,12 @@ class Product(db.Model, BaseMixin, ReprMixin):
 
     @hybrid_property
     def similar_products(self):
-        return [i[0] for i in Product.query.with_entities(Product.id)
-                .join(ProductSalt, and_(ProductSalt.product_id == Product.id))
-                .filter(ProductSalt.salt_id.in_([i.id for i in self.salts])).group_by(Product.id)
-                .having(func.Count(func.Distinct(ProductSalt.salt_id)) == len(self.salts)).all()]
+        if len(self.salts):
+            return [i[0] for i in Product.query.with_entities(Product.id)
+                    .join(ProductSalt, and_(ProductSalt.product_id == Product.id))
+                    .filter(ProductSalt.salt_id.in_([i.id for i in self.salts])).group_by(Product.id)
+                    .having(func.Count(func.Distinct(ProductSalt.salt_id)) == len(self.salts)).all()]
+        return []
 
 
 class Salt(db.Model, BaseMixin, ReprMixin):

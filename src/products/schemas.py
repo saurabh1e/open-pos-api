@@ -14,7 +14,7 @@ class BrandSchema(BaseSchema):
 class TagSchema(BaseSchema):
     class Meta:
         model = Tag
-        exclude = ('created_on', 'updated_on', 'products')
+        exclude = ('created_on', 'updated_on')
 
     name = ma.String()
     retail_shop_id = ma.Integer()
@@ -43,7 +43,7 @@ class TaxSchema(BaseSchema):
 class DistributorSchema(BaseSchema):
     class Meta:
         model = Distributor
-        exclude = ('created_on', 'updated_on', 'bills', 'products', 'retail_shop')
+        exclude = ('created_on', 'updated_on')
 
     name = ma.String()
     phone_numbers = ma.List(ma.Integer())
@@ -69,7 +69,7 @@ class DistributorBillSchema(BaseSchema):
 class ProductSchema(BaseSchema):
     class Meta:
         model = Product
-        exclude = ('created_on', 'updated_on', 'distributor', 'retail_shop', 'brand')
+        exclude = ('created_on', 'updated_on')
 
     name = ma.String()
     description = ma.Dict()
@@ -77,23 +77,25 @@ class ProductSchema(BaseSchema):
     distributor_id = ma.Integer()
     brand_id = ma.Integer()
     retail_shop_id = ma.Integer()
+    distributor = ma.Nested('DistributorSchema', many=False, dump_only=True, only=('id', 'name'))
+    brand = ma.Nested('BrandSchema', many=False, dump_only=True, only=('id', 'name'))
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
     mrp = ma.Integer()
     available_stock = ma.Integer()
     similar_products = ma.List(ma.Integer)
     brand_name = ma.String(dump_oly=True)
-    tags = ma.Nested('TagSchema', many=True, exclude=('retail_shop_id',))
-    salts = ma.Nested('SaltSchema', many=True, exclude=('retail_shop_id',))
+    tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
+    salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
     _links = ma.Hyperlinks(
         {
             'distributor': ma.URLFor('pos.distributor_view', slug='<distributor_id>'),
             'retail_shop': ma.URLFor('pos.retail_shop_view', slug='<retail_shop_id>'),
-            'brand': ma.URLFor('pos.brand_view', slug='<brand_id>')
+            'brand': ma.URLFor('pos.brand_view', slug='<brand_id>'),
+            'stocks': ma.URLFor('pos.stock_view', __product_id__exact='<id>')
         }
     )
 
-    stocks = ma.Hyperlinks(ma.URLFor('pos.stock_view', __product_id__exact='<id>'))
-
-    taxes = ma.Nested('TaxSchema', many=True)
+    taxes = ma.Nested('TaxSchema', many=True, only=('id', 'name'))
     available_stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                                  'units_sold', 'expiry_date', 'purchase_date', 'id'))
 
@@ -101,7 +103,7 @@ class ProductSchema(BaseSchema):
 class StockSchema(BaseSchema):
     class Meta:
         model = Stock
-        exclude = ('created_on', 'updated_on', 'product', 'order_items')
+        exclude = ('created_on', 'updated_on')
 
     purchase_amount = ma.Float(precision=2)
     selling_amount = ma.Float(precision=2)
@@ -119,20 +121,20 @@ class StockSchema(BaseSchema):
 class SaltSchema(BaseSchema):
     class Meta:
         model = Salt
-        exclude = ('created_on', 'updated_on', 'products', 'retail_shop')
+        exclude = ('created_on', 'updated_on')
     retail_shop_id = ma.Integer()
 
 
 class ComboSchema(BaseSchema):
     class Meta:
         model = Combo
-        exclude = ('created_on', 'updated_on', 'products', 'retail_shop')
+        exclude = ('created_on', 'updated_on')
     retail_shop_id = ma.Integer()
 
 
 class AddOnSchema(BaseSchema):
     class Meta:
         model = AddOn
-        exclude = ('created_on', 'updated_on', 'products', 'retail_shop')
+        exclude = ('created_on', 'updated_on')
     retail_shop_id = ma.Integer()
 
