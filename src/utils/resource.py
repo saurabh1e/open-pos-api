@@ -71,9 +71,9 @@ class ModelResource(ABC):
 
         self.obj_exclude.extend(self.obj_optional)
 
-        self.page = int(request.args.pop('__page')[0]) if '__page' in request.args else 1
-        self.limit = int(request.args.pop('__limit')[0]) if '__limit' in request.args and int(request.args['__limit'][0]) <= self.max_limit \
-            else self.default_limit
+        self.page = int(request.args.get('__page')) if request.args.get('__page') else 1
+        self.limit = int(request.args.get('__limit')) if request.args.get('__limit') \
+            and int(request.args.get('__limit')) <= self.max_limit else self.default_limit
 
     def apply_filters(self, queryset, **kwargs):
         for k, v in kwargs.items():
