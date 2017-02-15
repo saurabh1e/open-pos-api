@@ -126,10 +126,6 @@ class Product(db.Model, BaseMixin, ReprMixin):
         return mrp[0] if mrp else 0
 
     @hybrid_property
-    def brand_name(self):
-        return self.brand.name
-
-    @hybrid_property
     def similar_products(self):
         if len(self.salts):
             return [i[0] for i in Product.query.with_entities(Product.id)

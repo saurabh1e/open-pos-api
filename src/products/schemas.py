@@ -80,10 +80,9 @@ class ProductSchema(BaseSchema):
     distributor = ma.Nested('DistributorSchema', many=False, dump_only=True, only=('id', 'name'))
     brand = ma.Nested('BrandSchema', many=False, dump_only=True, only=('id', 'name'))
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
-    mrp = ma.Integer()
-    available_stock = ma.Integer()
+    mrp = ma.Integer(dump_only=True)
+    available_stock = ma.Integer(dump_only=True)
     similar_products = ma.List(ma.Integer)
-    brand_name = ma.String(dump_oly=True)
     tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
     salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
     _links = ma.Hyperlinks(
@@ -95,6 +94,8 @@ class ProductSchema(BaseSchema):
         }
     )
 
+    stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
+                                                       'units_sold', 'expiry_date', 'purchase_date', 'id'))
     taxes = ma.Nested('TaxSchema', many=True, only=('id', 'name'))
     available_stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                                  'units_sold', 'expiry_date', 'purchase_date', 'id'))

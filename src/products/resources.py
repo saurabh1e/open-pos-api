@@ -10,7 +10,7 @@ class ProductResource(ModelResource):
     model = Product
     schema = ProductSchema
 
-    optional = ('distributor', 'brand', 'retail_shop', 'stocks', 'similar_products')
+    optional = ('distributor', 'brand', 'retail_shop', 'stocks', 'similar_products', 'available_stocks')
 
     filters = {
         'available_stocks': [ops.Equal, ops.Greater],
