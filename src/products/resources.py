@@ -13,6 +13,8 @@ class ProductResource(ModelResource):
     optional = ('distributor', 'brand', 'retail_shop', 'stocks', 'similar_products', 'available_stocks')
 
     filters = {
+        'id': [ops.Equal, ops.In],
+        'name': [ops.Equal, ops.Contains],
         'available_stocks': [ops.Equal, ops.Greater],
         'retail_shop_id': [ops.Equal, ops.In]
     }
