@@ -27,8 +27,6 @@ class ProductResource(ModelResource):
         return True
 
     def has_add_permission(self, request, obj):
-        if not obj.user_id:
-            obj.user_id = 1
         return True
 
 
@@ -43,11 +41,35 @@ class TagResource(ModelResource):
         'retail_shop_id': [ops.Equal, ops.In]
     }
 
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
+
 
 class ProductTaxResource(AssociationModelResource):
 
     model = ProductTax
     schema = ProductTaxSchema
+
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
 
 
 class StockResource(ModelResource):
@@ -110,6 +132,18 @@ class DistributorBillResource(ModelResource):
     model = DistributorBill
     schema = DistributorBillSchema
 
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
+
 
 class BrandResource(ModelResource):
 
@@ -122,6 +156,18 @@ class BrandResource(ModelResource):
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
     }
+
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
 
 
 class TaxResource(ModelResource):
@@ -166,6 +212,18 @@ class SaltResource(ModelResource):
         'retail_shop_id': [ops.Equal, ops.In]
     }
 
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
+
 
 class AddOnResource(ModelResource):
     model = AddOn
@@ -178,6 +236,18 @@ class AddOnResource(ModelResource):
         'retail_shop_id': [ops.Equal, ops.In]
     }
 
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
+
 
 class ComboResource(ModelResource):
     model = Combo
@@ -189,4 +259,16 @@ class ComboResource(ModelResource):
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
     }
+
+    def has_read_permission(self, request, qs):
+        return qs
+
+    def has_change_permission(self, request, obj):
+        return True
+
+    def has_delete_permission(self, request, obj):
+        return True
+
+    def has_add_permission(self, request, obj):
+        return True
 
