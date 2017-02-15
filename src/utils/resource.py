@@ -22,6 +22,10 @@ class ModelResource(object):
 
     exclude = ()
 
+    include = ()
+
+    optional = ()
+
     page = 1
 
     auth_required = False
@@ -33,7 +37,19 @@ class ModelResource(object):
     def __init__(self, **kwargs):
 
         self.only = kwargs.pop('__only') if '__only' in kwargs else self.only
-        self.exclude = kwargs.pop('__exclude') if '__exclude' in kwargs else self.exclude
+
+        self.obj_exclude = list(self.exclude)
+        self.obj_optional = list(self.optional)
+
+        self.obj_exclude.extend(kwargs.pop('__exclude')) if '__exclude' in kwargs else None
+        if '__include' in kwargs:
+            for i in kwargs.pop('__include'):
+                try:
+                    self.obj_optional.remove(i)
+                except ValueError:
+                    pass
+        self.obj_exclude.extend(self.obj_optional)
+
         self.page = int(kwargs.pop('__page')[0]) if '__page' in kwargs else 1
         self.limit = int(kwargs.pop('__limit')[0]) if '__limit' in kwargs and int(kwargs['__limit'][0]) <= self.max_limit \
             else self.default_limit
