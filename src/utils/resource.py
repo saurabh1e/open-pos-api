@@ -1,16 +1,19 @@
-from sqlalchemy.exc import OperationalError, IntegrityError
+from abc import ABC, abstractmethod
 
+from sqlalchemy.exc import OperationalError, IntegrityError
+from flask import request
 from .models import db
 from .exceptions import ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException
 
 
-class ModelResource(object):
+class ModelResource(ABC):
+
     model = None
     schema = None
 
     filters = {}
 
-    max_limit = 200
+    max_limit = 100
 
     default_limit = 50
 
@@ -34,24 +37,42 @@ class ModelResource(object):
 
     roles_required = ()
 
-    def __init__(self, **kwargs):
+    def __init__(self):
 
-        self.only = kwargs.pop('__only') if '__only' in kwargs else self.only
+        if request.args.getlist('__only'):
+            if len(request.args.getlist('__only')) == 1:
+                self.obj_only = tuple(request.args.getlist('__only')[0].split(','))
+            else:
+                self.obj_only = tuple(request.args.getlist('__only'))
+        else:
+            self.obj_only = self.only
 
-        self.obj_exclude = list(self.exclude)
+        self.obj_exclude = []
+        if request.args.getlist('__exclude'):
+            if len(request.args.getlist('__exclude')) == 1:
+                self.obj_exclude = request.args.getlist('__exclude')[0].split(',')
+            else:
+                self.obj_exclude = request.args.getlist('__exclude')
+
+        self.obj_exclude.extend(list(self.exclude))
         self.obj_optional = list(self.optional)
 
-        self.obj_exclude.extend(kwargs.pop('__exclude')) if '__exclude' in kwargs else None
-        if '__include' in kwargs:
-            for i in kwargs.pop('__include'):
+        if request.args.getlist('__include'):
+            if len(request.args.getlist('__include')) == 1:
+                optionals = request.args.getlist('__include')[0].split(',')
+            else:
+                optionals = request.args.getlist('__include')
+
+            for optional in optionals:
                 try:
-                    self.obj_optional.remove(i)
+                    self.obj_optional.remove(optional)
                 except ValueError:
                     pass
+
         self.obj_exclude.extend(self.obj_optional)
 
-        self.page = int(kwargs.pop('__page')[0]) if '__page' in kwargs else 1
-        self.limit = int(kwargs.pop('__limit')[0]) if '__limit' in kwargs and int(kwargs['__limit'][0]) <= self.max_limit \
+        self.page = int(request.args.pop('__page')[0]) if '__page' in request.args else 1
+        self.limit = int(request.args.pop('__limit')[0]) if '__limit' in request.args and int(request.args['__limit'][0]) <= self.max_limit \
             else self.default_limit
 
     def apply_filters(self, queryset, **kwargs):
@@ -68,7 +89,7 @@ class ModelResource(object):
             queryset = queryset.order_by(getattr(self.model, order_by))
         return queryset
 
-    def patch_resource(self, request, obj):
+    def patch_resource(self, obj):
         if self.has_change_permission(request, obj) and obj:
             obj, errors = self.schema(exclude=self.exclude_related_resource).load(request.json, instance=obj, partial=True)
             if errors:
@@ -89,7 +110,7 @@ class ModelResource(object):
 
         return {'error': True, 'Message': 'Forbidden Permission Denied To Change Resource'}, 403
 
-    def update_resource(self, request):
+    def update_resource(self):
         data = request.json if isinstance(request.json, list) else [request.json]
         for d in data:
             obj = self.schema().get_instance(d)
@@ -111,7 +132,7 @@ class ModelResource(object):
                 raise SQlOperationalError(data=d, message='Operational Error', operation='Updating Resource', status=400)
         return {'success': True, 'message': 'Resource Updated successfully'}, 201
 
-    def save_resource(self, request):
+    def save_resource(self):
         data = request.json if isinstance(request.json, list) else [request.json]
         objects, errors = self.schema().load(data, session=db.session, many=True)
         if errors:
@@ -134,20 +155,24 @@ class ModelResource(object):
         return {'success': True, 'message': 'Resource added successfully',
                 'data': self.schema().dump(objects, many=True).data}, 201
 
+    @abstractmethod
     def has_read_permission(self, request, qs):
         return qs
 
+    @abstractmethod
     def has_change_permission(self, request, obj):
         return True
 
+    @abstractmethod
     def has_delete_permission(self, request, obj):
         return True
 
+    @abstractmethod
     def has_add_permission(self, request, obj):
         return True
 
 
-class AssociationModelResource(object):
+class AssociationModelResource(ABC):
 
     model = None
 
@@ -157,7 +182,7 @@ class AssociationModelResource(object):
 
     }
 
-    def add_relation(self, request, data):
+    def add_relation(self, data):
         obj, errors = self.schema().load(data, session=db.session)
         if errors:
             raise CustomException(data=data, message=str(errors), operation='adding relation')
@@ -173,7 +198,7 @@ class AssociationModelResource(object):
         else:
             raise ResourceNotFound(data=data, message='Permission Denied', operation='adding relation', status=404)
 
-    def update_relation(self, request, data):
+    def update_relation(self, data):
         obj = self.model.query.get(data['id'])
         if obj:
             obj, errors = self.schema().load(data, instance=obj)
@@ -192,7 +217,7 @@ class AssociationModelResource(object):
         else:
             raise ResourceNotFound(data=data, message='Object not Found', operation='Updating relation', status=404)
 
-    def remove_relation(self, request, data):
+    def remove_relation(self, data):
         obj = self.model.query
         for k, v in data.items():
             if hasattr(self.model, k):
@@ -209,14 +234,18 @@ class AssociationModelResource(object):
         else:
             raise ResourceNotFound(data=data, message='Object not Found', operation='deleting relation', status=404)
 
+    @abstractmethod
     def has_read_permission(self, request, qs):
         return qs
 
+    @abstractmethod
     def has_change_permission(self, request, obj):
         return True
 
+    @abstractmethod
     def has_delete_permission(self, request, obj):
         return True
 
+    @abstractmethod
     def has_add_permission(self, request, obj):
         return True

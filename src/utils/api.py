@@ -62,14 +62,13 @@ class BaseView(Resource):
             self.method_decorators.append(auth_token_required)
 
     def get(self, slug=None):
-
-        resource = self.resource(**request.args)
+        resource = self.resource()
         if slug:
             obj = resource.model.query.get(slug)
             if obj:
                 obj = resource.has_read_permission(request, obj)
                 return make_response(jsonify(resource.schema(exclude=tuple(resource.obj_exclude),
-                                                                  only=tuple(resource.only)).dump(
+                                                                  only=tuple(resource.obj_only)).dump(
                     obj, many=False).data), 200)
 
             return make_response(jsonify({'error': True, 'message': 'Resource not found'}), 404)
@@ -86,7 +85,7 @@ class BaseView(Resource):
             if resources.items:
 
                 return make_response(jsonify({'success': True, 'data': resource.schema(exclude=tuple(resource.obj_exclude),
-                                                                                       only=tuple(resource.only))
+                                                                                       only=tuple(resource.obj_only))
                                              .dump(resources.items, many=True).data, 'total': resources.total}), 200)
             return make_response(jsonify({'error': True, 'Message': 'No Resource Found'}), 404)
 
