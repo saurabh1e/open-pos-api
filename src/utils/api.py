@@ -1,4 +1,7 @@
 import re
+from typing import TypeVar
+from abc import abstractproperty
+
 from flask_restful import Api
 from flask_restful import Resource
 from flask import request, jsonify, make_response
@@ -9,6 +12,8 @@ from .blue_prints import bp
 from .resource import ModelResource
 from .exceptions import ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException
 from .methods import BulkUpdate, List, Fetch, Create, Delete, Update
+
+ModelResourceType = TypeVar('ModelResourceType', bound=ModelResource)
 
 
 def to_underscore(name):
@@ -23,9 +28,9 @@ class ApiFactory(Api):
     def register(self, **kwargs):
 
         def decorator(klass):
-            document_name = klass.resource.model.__name__.lower()
+            document_name = klass.get_resource().model.__name__.lower()
             name = kwargs.pop('name', document_name)
-            url = kwargs.pop('url', '/%s' % to_underscore(klass.resource.model.__name__))
+            url = kwargs.pop('url', '/%s' % to_underscore(klass.get_resource().model.__name__))
             endpoint = to_underscore(klass.__name__)
             view_func = klass.as_view(name)
             methods = klass.api_methods
@@ -46,13 +51,18 @@ api = ApiFactory(bp)
 
 
 class BaseView(Resource):
-    resource = ModelResource
 
     api_methods = [BulkUpdate, List, Fetch, Create, Delete, Update]
 
     def __init__(self):
-        if self.resource is not None:
+        if self.get_resource() is not None:
+            self.resource = self.get_resource()()
             self.add_method_decorator()
+
+    @classmethod
+    @abstractproperty
+    def get_resource(cls) -> ModelResourceType:
+        pass
 
     def add_method_decorator(self):
         self.method_decorators = []
@@ -62,36 +72,35 @@ class BaseView(Resource):
             self.method_decorators.append(auth_token_required)
 
     def get(self, slug=None):
-        resource = self.resource()
         if slug:
-            obj = resource.model.query.get(slug)
+            obj = self.resource.model.query.get(slug)
             if obj:
-                obj = resource.has_read_permission(request, obj)
-                return make_response(jsonify(resource.schema(exclude=tuple(resource.obj_exclude),
-                                                                  only=tuple(resource.obj_only)).dump(
+                obj = self.resource.has_read_permission(obj)
+                return make_response(jsonify(self.resource.schema(exclude=tuple(self.resource.obj_exclude),
+                                                                  only=tuple(self.resource.obj_only)).dump(
                     obj, many=False).data), 200)
 
             return make_response(jsonify({'error': True, 'message': 'Resource not found'}), 404)
 
         else:
-            objects = resource.apply_filters(queryset=self.resource.model.query, **request.args)
-            objects = resource.has_read_permission(request, objects)
+            objects = self.resource.apply_filters(queryset=self.resource.model.query, **request.args)
+            objects = self.resource.has_read_permission(objects)
 
             if '__order_by' in request.args:
-                objects = resource.apply_ordering(objects, request.args['__order_by'])
-
-            resources = objects.paginate(page=resource.page, per_page=resource.limit)
+                objects = self.resource.apply_ordering(objects, request.args['__order_by'])
+            resources = objects.paginate(page=self.resource.page, per_page=self.resource.limit)
 
             if resources.items:
 
-                return make_response(jsonify({'success': True, 'data': resource.schema(exclude=tuple(resource.obj_exclude),
-                                                                                       only=tuple(resource.obj_only))
+                return make_response(jsonify({'success': True,
+                                              'data': self.resource.schema(exclude=tuple(self.resource.obj_exclude),
+                                                                           only=tuple(self.resource.obj_only))
                                              .dump(resources.items, many=True).data, 'total': resources.total}), 200)
             return make_response(jsonify({'error': True, 'Message': 'No Resource Found'}), 404)
 
     def post(self):
         try:
-            data, status = self.resource().save_resource(request)
+            data, status = self.resource.save_resource()
         except (SQLIntegrityError, SQlOperationalError) as e:
             db.session.rollback()
             e.message['error'] = True
@@ -101,7 +110,7 @@ class BaseView(Resource):
     def put(self):
 
         try:
-            data, status = self.resource().update_resource(request)
+            data, status = self.resource.update_resource()
         except (SQLIntegrityError, SQlOperationalError) as e:
             db.session.rollback()
             e.message['error'] = True
@@ -113,7 +122,7 @@ class BaseView(Resource):
         if not obj:
             return make_response(jsonify({'error': True, 'message': 'Resource not found'}), 404)
         try:
-            data, status = self.resource().patch_resource(request, obj)
+            data, status = self.resource.patch_resource(obj)
         except (SQLIntegrityError, SQlOperationalError) as e:
             db.session.rollback()
             e.message['error'] = True
@@ -124,7 +133,7 @@ class BaseView(Resource):
 
         obj = self.resource.model.query.get(slug)
         if obj:
-            if self.resource().has_delete_permission(request, obj):
+            if self.resource.has_delete_permission(obj):
                 db.session.delete(obj)
                 db.session.commit()
                 return make_response(jsonify({}), 204)
@@ -136,13 +145,16 @@ class BaseView(Resource):
 
 class AssociationView(Resource):
 
-    resource = None
-
     api_methods = [Update]
 
     def __init__(self):
-        if self.resource is not None:
+        if self.get_resource is not None:
+            self.resource = self.get_resource()()
             self.add_method_decorator()
+
+    @abstractproperty
+    def get_resource(self) -> ModelResourceType:
+        pass
 
     def add_method_decorator(self):
         self.method_decorators = []
@@ -158,11 +170,11 @@ class AssociationView(Resource):
             try:
                 db.session.begin_nested()
                 if d['__action'] == 'add':
-                    self.resource().add_relation(request, d)
+                    self.resource.add_relation(request, d)
                 if d['__action'] == 'update':
-                    self.resource().update_relation(request, d)
+                    self.resource.update_relation(request, d)
                 elif d['__action'] == 'remove':
-                    self.resource().remove_relation(request, d)
+                    self.resource.remove_relation(request, d)
             except (ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException) as e:
                 db.session.rollback()
                 e.message['error'] = True

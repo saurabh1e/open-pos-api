@@ -6,55 +6,87 @@ from src import api
 
 @api.register()
 class ProductView(BaseView):
-    resource = ProductResource
+
+    @classmethod
+    def get_resource(cls):
+        return ProductResource
 
 
 @api.register()
 class TagView(BaseView):
-    resource = TagResource
+
+    @classmethod
+    def get_resource(cls):
+        return TagResource
 
 
 @api.register()
 class StockView(BaseView):
-    resource = StockResource
+
+    @classmethod
+    def get_resource(cls):
+        return StockResource
 
 
 @api.register()
 class DistributorView(BaseView):
-    resource = DistributorResource
+
+    @classmethod
+    def get_resource(cls):
+        return DistributorResource
 
 
 @api.register()
 class DistributorBillView(BaseView):
-    resource = DistributorBillResource
+
+    @classmethod
+    def get_resource(cls):
+        return DistributorBillResource
 
 
 @api.register()
 class TaxView(BaseView):
-    resource = TaxResource
+
+    @classmethod
+    def get_resource(cls):
+        return TaxResource
 
 
 @api.register()
 class BrandView(BaseView):
-    resource = BrandResource
+
+    @classmethod
+    def get_resource(cls):
+        return BrandResource
 
 
 @api.register()
 class ComboView(BaseView):
-    resource = ComboResource
+
+    @classmethod
+    def get_resource(cls):
+        return ComboResource
 
 
 @api.register()
 class AddOnView(BaseView):
-    resource = AddOnResource
+
+    @classmethod
+    def get_resource(cls):
+        return AddOnResource
 
 
 @api.register()
 class SaltView(BaseView):
-    resource = SaltResource
+
+    @classmethod
+    def get_resource(cls):
+        return SaltResource
 
 
 @api.register()
 class ProductTaxAssociationView(AssociationView):
 
-    resource = ProductTaxResource
+    @classmethod
+    def get_resource(cls):
+        return ProductTaxResource

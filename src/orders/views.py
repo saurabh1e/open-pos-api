@@ -6,29 +6,47 @@ from src import api
 
 @api.register()
 class OrderView(BaseView):
-    resource = OrderResource
+
+    @classmethod
+    def get_resource(cls):
+        return OrderResource
 
 
 @api.register()
 class ItemView(BaseView):
-    resource = ItemResource
+
+    @classmethod
+    def get_resource(cls):
+        return ItemResource
 
 
 @api.register()
 class OrderDiscountView(BaseView):
-    resource = OrderDiscountResource
+
+    @classmethod
+    def get_resource(cls):
+        return OrderDiscountResource
 
 
 @api.register()
 class ItemTaxView(BaseView):
-    resource = ItemTaxResource
+
+    @classmethod
+    def get_resource(cls):
+        return ItemTaxResource
 
 
 @api.register()
 class ItemAddOnView(BaseView):
-    resource = ItemAddOnResource
+
+    @classmethod
+    def get_resource(cls):
+        return ItemAddOnResource
 
 
 @api.register()
 class StatusView(BaseView):
-    resource = StatusResource
+
+    @classmethod
+    def get_resource(cls):
+        return StatusResource

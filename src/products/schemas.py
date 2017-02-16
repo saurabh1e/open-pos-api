@@ -9,6 +9,7 @@ class BrandSchema(BaseSchema):
 
     name = ma.String()
     retail_shop_id = ma.Integer()
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
 class TagSchema(BaseSchema):
@@ -18,6 +19,7 @@ class TagSchema(BaseSchema):
 
     name = ma.String()
     retail_shop_id = ma.Integer()
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
 class ProductTaxSchema(BaseSchema):
@@ -38,6 +40,7 @@ class TaxSchema(BaseSchema):
 
     name = ma.String()
     value = ma.Float(precision=2)
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
 class DistributorSchema(BaseSchema):
@@ -50,6 +53,7 @@ class DistributorSchema(BaseSchema):
     emails = ma.List(ma.Email())
     retail_shop_id = ma.Integer()
 
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
     bills = ma.Nested('DistributorBillSchema', many=True, exclude=('distributor', 'distributor_id'))
 
 
@@ -96,7 +100,7 @@ class ProductSchema(BaseSchema):
 
     stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                        'units_sold', 'expiry_date', 'purchase_date', 'id'))
-    taxes = ma.Nested('TaxSchema', many=True, only=('id', 'name'))
+    taxes = ma.Nested('TaxSchema', many=True, only=('id', 'name', 'value'))
     available_stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                                  'units_sold', 'expiry_date', 'purchase_date', 'id'))
 

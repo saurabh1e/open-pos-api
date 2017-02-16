@@ -8,16 +8,16 @@ class OrderResource(ModelResource):
     model = Order
     schema = OrderSchema
 
-    def has_read_permission(self, request, qs):
+    def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, request, obj):
+    def has_change_permission(self, obj):
         return True
 
-    def has_delete_permission(self, request, obj):
+    def has_delete_permission(self, obj):
         return True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, obj):
         if not obj.user_id:
             obj.user_id = 1
         return True
@@ -27,16 +27,16 @@ class ItemTaxResource(ModelResource):
     model = ItemTax
     schema = ItemTaxSchema
 
-    def has_read_permission(self, request, qs):
+    def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, request, obj):
+    def has_change_permission(self, obj):
         return True
 
-    def has_delete_permission(self, request, obj):
+    def has_delete_permission(self, obj):
         return True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, obj):
         return True
 
 
@@ -44,16 +44,16 @@ class OrderDiscountResource(ModelResource):
     model = OrderDiscount
     schema = OrderDiscountSchema
 
-    def has_read_permission(self, request, qs):
+    def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, request, obj):
+    def has_change_permission(self, obj):
         return True
 
-    def has_delete_permission(self, request, obj):
+    def has_delete_permission(self, obj):
         return True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, obj):
         return True
 
 
@@ -76,16 +76,16 @@ class ItemResource(ModelResource):
 
     exclude = ()
 
-    def has_read_permission(self, request, qs):
+    def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, request, obj):
+    def has_change_permission(self, obj):
         return True
 
-    def has_delete_permission(self, request, obj):
+    def has_delete_permission(self, obj):
         return True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, obj):
 
         return True
 
@@ -94,16 +94,16 @@ class StatusResource(ModelResource):
     model = Status
     schema = StatusSchema
 
-    def has_read_permission(self, request, qs):
+    def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, request, obj):
+    def has_change_permission(self, obj):
         return True
 
-    def has_delete_permission(self, request, obj):
+    def has_delete_permission(self, obj):
         return True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, obj):
         return True
 
 
@@ -111,15 +111,15 @@ class ItemAddOnResource(ModelResource):
     model = ItemAddOn
     schema = ItemAddOnSchema
 
-    def has_read_permission(self, request, qs):
+    def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, request, obj):
+    def has_change_permission(self, obj):
         return True
 
-    def has_delete_permission(self, request, obj):
+    def has_delete_permission(self, obj):
         return True
 
-    def has_add_permission(self, request, obj):
+    def has_add_permission(self, obj):
         return True
 

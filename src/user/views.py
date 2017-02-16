@@ -11,34 +11,50 @@ from .models import User
 
 @api.register()
 class UserView(BaseView):
-    resource = UserResource
+
+    @classmethod
+    def get_resource(cls):
+        return UserResource
 
 
 @api.register()
 class RoleView(BaseView):
-    resource = RoleResource
+
+    @classmethod
+    def get_resource(cls):
+        return RoleResource
 
 
 @api.register()
 class UserRoleAssociationView(AssociationView):
 
-    resource = UserRoleResource
+    @classmethod
+    def get_resource(cls):
+        return UserRoleResource
 
 
 @api.register()
 class RetailShopView(BaseView):
-    resource = RetailShopResource
+
+    @classmethod
+    def get_resource(cls):
+        return RetailShopResource
 
 
 @api.register()
 class RetailBrandView(BaseView):
-    resource = RetailBrandResource
+
+    @classmethod
+    def get_resource(cls):
+        return RetailBrandResource
 
 
 @api.register()
 class UserRetailShopAssociationView(AssociationView):
 
-    resource = UserRetailShopResource
+    @classmethod
+    def get_resource(cls):
+        return UserRetailShopResource
 
 
 class UserLoginResource(Resource):
@@ -70,20 +86,32 @@ api.add_resource(UserLoginResource, '/login/', endpoint='login')
 
 @api.register()
 class CustomerView(BaseView):
-    resource = CustomerResource
+
+    @classmethod
+    def get_resource(cls):
+        return CustomerResource
 
 
 @api.register()
 class AddressView(BaseView):
-    resource = AddressResource
+
+    @classmethod
+    def get_resource(cls):
+        return AddressResource
 
 
 @api.register()
 class LocalityView(BaseView):
-    resource = LocalityResource
+
+    @classmethod
+    def get_resource(cls):
+        return LocalityResource
 
 
 @api.register()
 class CityView(BaseView):
-    resource = CityResource
+
+    @classmethod
+    def get_resource(cls):
+        return CityResource
 

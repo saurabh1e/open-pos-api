@@ -189,7 +189,7 @@ class Stock(db.Model, BaseMixin, ReprMixin):
 
     @units_sold.expression
     def units_sold(cls):
-        return select([func.Sum(Item.quantity)]).where(Item.stock_id == cls.id).as_scalar()
+        return select([func.coalesce(func.Sum(Item.quantity),0)]).where(Item.stock_id == cls.id).as_scalar()
 
 
 class Combo(db.Model, BaseMixin, ReprMixin):
