@@ -36,7 +36,6 @@ class TaxSchema(BaseSchema):
     class Meta:
         model = Tax
         exclude = ('created_on', 'updated_on')
-        fields = ('name', 'value', 'id')
 
     name = ma.String()
     value = ma.Float(precision=2)
@@ -127,7 +126,9 @@ class SaltSchema(BaseSchema):
     class Meta:
         model = Salt
         exclude = ('created_on', 'updated_on')
+
     retail_shop_id = ma.Integer()
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
 class ComboSchema(BaseSchema):

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_security import RoleMixin, UserMixin
-from sqlalchemy import UniqueConstraint, func
+from sqlalchemy import UniqueConstraint, func, select, and_
 
 from src.orders.models import Order
 from src import db, BaseMixin, ReprMixin
@@ -110,7 +110,7 @@ class Role(db.Model, BaseMixin, RoleMixin, ReprMixin):
 class User(db.Model, BaseMixin, UserMixin, ReprMixin):
     email = db.Column(db.String(127), unique=True, nullable=False)
     password = db.Column(db.String(255), default='', nullable=False)
-    username = db.Column(db.String(127), nullable=True)
+    name = db.Column(db.String(127), nullable=True)
     mobile_number = db.Column(db.String(20), unique=True, nullable=False)
 
     active = db.Column(db.Boolean())
@@ -133,6 +133,10 @@ class User(db.Model, BaseMixin, UserMixin, ReprMixin):
     def retail_shop_ids(self):
         return [i[0] for i in self.retail_shops.with_entities(RetailShop.id).all()]
 
+    @hybrid_property
+    def brand_ids(self):
+        return set([i[0] for i in self.retail_shops.with_entities(RetailShop.retail_brand_id).all()])
+
 
 class PermissionSet(db.Model, BaseMixin, ReprMixin):
 
@@ -140,15 +144,16 @@ class PermissionSet(db.Model, BaseMixin, ReprMixin):
     description = db.Column(db.String(255))
 
 
-class Customer(db.Model, BaseMixin , ReprMixin):
+class Customer(db.Model, BaseMixin, ReprMixin):
 
-    email = db.Column(db.String(127), nullable=True)
-    name = db.Column(db.String(127), nullable=True)
+    email = db.Column(db.String(55), nullable=True)
+    name = db.Column(db.String(55), nullable=True)
     active = db.Column(db.Boolean())
-    mobile_number = db.Column(db.String(20), unique=True, nullable=False)
+    mobile_number = db.Column(db.String(20), nullable=True)
     loyalty_points = db.Column(db.Integer, default=0)
     retail_brand_id = db.Column(db.Integer(), db.ForeignKey('retail_brand.id'))
 
+    retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id])
     addresses = db.relationship('Address', secondary='customer_address')
     orders = db.relationship('Order', uselist=True, lazy='dynamic')
 

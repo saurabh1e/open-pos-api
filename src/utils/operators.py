@@ -1,4 +1,5 @@
 from abc import ABC, abstractstaticmethod
+from sqlalchemy import func
 
 
 class Operators(ABC):
@@ -33,7 +34,7 @@ class Contains(Operators):
 
     @staticmethod
     def prepare_queryset(query, model, key, value):
-        return query.filter(getattr(model, key).contains(value[0]))
+        return query.filter(func.lower(getattr(model, key)).contains(value[0].lower()))
 
 
 class Boolean(Operators):

@@ -1,4 +1,4 @@
-from src.utils import ModelResource
+from src.utils import ModelResource, operators as ops
 from .models import Item, ItemAddOn, Order, OrderDiscount, ItemTax, Status
 from .schemas import ItemSchema, ItemTaxSchema, OrderSchema, OrderDiscountSchema, ItemAddOnSchema, StatusSchema
 
@@ -7,6 +7,15 @@ class OrderResource(ModelResource):
 
     model = Order
     schema = OrderSchema
+
+    optional = ('items',)
+
+    filters = {
+        'id': [ops.Equal],
+        'customer_id': [ops.Equal],
+        'retail_shop_id': [ops.Equal],
+        'current_status_id':  [ops.Equal],
+    }
 
     def has_read_permission(self, qs):
         return qs
@@ -18,8 +27,6 @@ class OrderResource(ModelResource):
         return True
 
     def has_add_permission(self, obj):
-        if not obj.user_id:
-            obj.user_id = 1
         return True
 
 

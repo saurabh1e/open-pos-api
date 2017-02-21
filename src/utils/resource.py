@@ -99,7 +99,7 @@ class ModelResource(ABC):
         return queryset
 
     def patch_resource(self, obj):
-        if self.has_change_permission(request, obj) and obj:
+        if self.has_change_permission(obj) and obj:
             obj, errors = self.schema(exclude=self.exclude_related_resource).load(request.json, instance=obj,
                                                                                   partial=True)
             if errors:
@@ -129,7 +129,7 @@ class ModelResource(ABC):
                 db.session.rollback()
                 return {'error': True, 'message': str(errors)}, 400
 
-            if not self.has_change_permission(request, obj):
+            if not self.has_change_permission(obj):
                 db.session.rollback()
                 return {'error': True, 'Message': 'Forbidden Permission Denied To Add Resource'}, 403
             try:
@@ -150,7 +150,7 @@ class ModelResource(ABC):
             db.session.rollback()
             return {'error': True, 'message': str(errors)}, 400
 
-        if self.has_add_permission(request, objects):
+        if self.has_add_permission(objects):
             db.session.add_all(objects)
         else:
             db.session.rollback()
@@ -197,7 +197,7 @@ class AssociationModelResource(ABC):
         if errors:
             raise CustomException(data=data, message=str(errors), operation='adding relation')
 
-        if self.has_add_permission(request, obj):
+        if self.has_add_permission(obj):
             db.session.add(obj)
             try:
                 db.session.commit()
@@ -214,7 +214,7 @@ class AssociationModelResource(ABC):
             obj, errors = self.schema().load(data, instance=obj)
             if errors:
                 raise CustomException(data=data, message=str(errors), operation='updating relation')
-            if self.has_change_permission(request, obj):
+            if self.has_change_permission(obj):
                 raise CustomException(data=data, message='Permission Denied', operation='adding relation')
             try:
                 db.session.commit()
@@ -234,7 +234,7 @@ class AssociationModelResource(ABC):
             if hasattr(self.model, k):
                 obj = obj.filter(getattr(self.model, k) == v)
         obj = obj.first()
-        if obj and self.has_delete_permission(request, obj):
+        if obj and self.has_delete_permission(obj):
             db.session.delete(obj)
             try:
                 db.session.commit()

@@ -14,6 +14,9 @@ class UserSchema(BaseSchema):
     email = ma.Email(unique=True, primary_key=True, required=True)
     username = ma.String(required=True)
     name = ma.String(dump_only=True)
+    brand_ids = ma.List(ma.Integer)
+    retail_shop_ids = ma.List(ma.Integer)
+    retail_shops = ma.Nested('RetailShopSchema', many=True)
 
     _links = ma.Hyperlinks({'shops': ma.URLFor('pos.retail_shop_view', __id__in='<retail_shop_ids>')})
     roles = ma.Nested('RoleSchema', many=True, dump_only=True)
@@ -63,6 +66,8 @@ class RetailShopSchema(BaseSchema):
             'taxes': ma.URLFor('pos.tax_view', __retail_shop_id__exact='<id>')
         }
     )
+    retail_brand_id = ma.Integer()
+    retail_brand = ma.Nested('RetailBrandSchema', many=False)
     total_sales = ma.Dict()
     address = ma.Nested('AddressSchema', many=False)
     localities = ma.Nested('LocalitySchema', many=True)
@@ -85,6 +90,8 @@ class CustomerSchema(BaseSchema):
     class Meta:
         model = Customer
         exclude = ('created_on', 'updated_on')
+
+    addresses = ma.Nested('AddressSchema', many=True, dump=True)
 
 
 class AddressSchema(BaseSchema):

@@ -27,6 +27,7 @@ class Tax(db.Model, BaseMixin, ReprMixin):
 
     name = db.Column(db.String(15), nullable=False)
     value = db.Column(db.Float(precision=2), nullable=False)
+    is_disabled = db.Column(db.Boolean(), default=False)
 
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
 
@@ -84,11 +85,12 @@ class ProductTag(db.Model, BaseMixin, ReprMixin):
 
 class Product(db.Model, BaseMixin, ReprMixin):
 
-    name = db.Column(db.String(20), unique=False, nullable=False)
+    name = db.Column(db.String(55), unique=False, nullable=False)
     min_stock = db.Column(db.SmallInteger, nullable=False)
     auto_discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
     description = db.Column(db.JSON, nullable=True)
     sub_description = db.Column(db.Text(), nullable=True)
+    is_disabled = db.Column(db.Boolean(), default=False)
 
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
     distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'))
@@ -189,7 +191,7 @@ class Stock(db.Model, BaseMixin, ReprMixin):
 
     @units_sold.expression
     def units_sold(cls):
-        return select([func.coalesce(func.Sum(Item.quantity),0)]).where(Item.stock_id == cls.id).as_scalar()
+        return select([func.coalesce(func.Sum(Item.quantity), 0)]).where(Item.stock_id == cls.id).as_scalar()
 
 
 class Combo(db.Model, BaseMixin, ReprMixin):

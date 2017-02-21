@@ -1,8 +1,9 @@
+from src.utils import ModelResource, operators as ops, AssociationModelResource
+
 from .schemas import User, UserSchema, Role, RoleSchema, UserRole, UserRoleSchema,\
     RetailBrandSchema, RetailShopSchema, UserRetailShopSchema, CustomerSchema, AddressSchema, CitySchema, LocalitySchema
 
 from .models import RetailShop, RetailBrand, UserRetailShop, Customer, Locality, City, Address
-from src.utils import ModelResource, operators as ops, AssociationModelResource
 
 
 class RoleResource(ModelResource):
@@ -45,6 +46,8 @@ class UserResource(ModelResource):
     model = User
     schema = UserSchema
 
+    optional = ('retail_shops',)
+
     filters = {
         'username': [ops.Equal, ops.Contains],
         'active': [ops.Boolean],
@@ -78,6 +81,8 @@ class UserResource(ModelResource):
 class RetailShopResource(ModelResource):
     model = RetailShop
     schema = RetailShopSchema
+
+    optional = ('localities', 'total_sales', 'retail_brand')
 
     filters = {
         'id': [ops.Equal, ops.In]
@@ -134,6 +139,16 @@ class UserRetailShopResource(AssociationModelResource):
 class CustomerResource(ModelResource):
     model = Customer
     schema = CustomerSchema
+
+    optional = ('addresses', 'orders')
+
+    filters = {
+        'name': [ops.Equal, ops.Contains],
+        'number': [ops.Equal, ops.Contains],
+        'email': [ops.Equal, ops.Contains],
+        'id': [ops.Equal],
+        'retail_brand_id': [ops.Equal]
+    }
 
     def has_read_permission(self, qs):
         return qs

@@ -37,7 +37,7 @@ class Order(db.Model, BaseMixin, ReprMixin):
     items = db.relationship('Item', uselist=True, back_populates='order', lazy='dynamic')
     customer = db.relationship('Customer', foreign_keys=[customer_id])
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id])
-    discounts = db.relationship('Discount', secondary='order_discount', uselist=False)
+    discounts = db.relationship('Discount', secondary='order_discount', uselist=True)
     denominations = db.relationship('Denomination', secondary='order_denomination', uselist=False)
     current_status = db.relationship('Status', uselist=False, foreign_keys=[current_status_id])
     time_line = db.relationship('Status', secondary='order_status')

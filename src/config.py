@@ -43,8 +43,8 @@ class DevConfig(BaseConfig):
 
 class TestConfig(BaseConfig):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URI') or \
-                              'sqlite:///{}'.format(os.path.join(basedir, 'test-sqlite.db'))
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DB_URI')
 
 
 class ProdConfig(BaseConfig):

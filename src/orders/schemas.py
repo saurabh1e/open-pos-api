@@ -1,5 +1,5 @@
 from src import ma, BaseSchema
-from .models import Order, Item, ItemTax, OrderDiscount, Status, ItemAddOn
+from .models import Order, Item, ItemTax, OrderDiscount, Status, ItemAddOn, Discount
 
 
 class OrderSchema(BaseSchema):
@@ -14,15 +14,16 @@ class OrderSchema(BaseSchema):
     discount_id = ma.Integer()
     items_count = ma.Integer()
 
-    items = ma.Nested('OrderItemSchema', many=True, exclude=('order', 'order_id', 'stock', 'stock_id',
-                                                             'discount_id', 'product_variation_id'))
-    customer = ma.Nested('UserSchema', many=False)
-    discount = ma.Nested('OrderDiscountSchema', many=False)
+    items = ma.Nested('ItemSchema', many=True, exclude=('order', 'order_id'), load=True)
+    customer = ma.Nested('CustomerSchema', many=False, load=True, only=('id', 'name', 'mobile_number'))
+    discounts = ma.Nested('DiscountSchema', many=True, load=True)
 
 
 class ItemSchema(BaseSchema):
     class Meta:
         model = Item
+        exclude = ('created_on', 'updated_on')
+        exclude = ('created_on', 'updated_on')
 
     product_id = ma.Integer(load=True, required=True)
     unit_price = ma.Float(precision=2)
@@ -36,7 +37,7 @@ class ItemSchema(BaseSchema):
     discount_amount = ma.Float(dump_only=True)
     children = ma.Nested('self', many=True, default=None, load=True, exclude=('parent',))
     product = ma.Nested('ProductSchema', many=False,
-                        only=('id', 'name', 'sub_description'))
+                        only=('id', 'name'))
     combo = ma.Nested('ComboSchema', many=False, only=('id', 'name'))
     taxes = ma.Nested('ItemTaxSchema', many=True, exclude=('item',))
 
@@ -44,19 +45,21 @@ class ItemSchema(BaseSchema):
 class ItemTaxSchema(BaseSchema):
     class Meta:
         model = ItemTax
+        exclude = ('created_on', 'updated_on')
 
     tax_value = ma.Float(precision=2)
 
     item_id = ma.Integer(load=True)
     tax_id = ma.Integer(load=True)
 
-    tax = ma.Nested('TaxSchema', many=False)
+    tax = ma.Nested('TaxSchema', many=False, only=('id', 'name'))
     item = ma.Nested('ItemSchema', many=False)
 
 
 class OrderDiscountSchema(BaseSchema):
     class Meta:
         model = OrderDiscount
+        exclude = ('created_on', 'updated_on')
 
     name = ma.String()
     amount = ma.Float(precision=2)
@@ -65,6 +68,7 @@ class OrderDiscountSchema(BaseSchema):
 class ItemAddOnSchema(BaseSchema):
     class Meta:
         model = ItemAddOn
+        exclude = ('created_on', 'updated_on')
 
     name = ma.String()
     amount = ma.Float(precision=2)
@@ -73,7 +77,16 @@ class ItemAddOnSchema(BaseSchema):
 class StatusSchema(BaseSchema):
     class Meta:
         model = Status
+        exclude = ('created_on', 'updated_on')
 
     name = ma.String()
     amount = ma.Float(precision=2)
 
+
+class DiscountSchema(BaseSchema):
+    class Meta:
+        model = Discount
+        exclude = ('created_on', 'updated_on')
+
+    name = ma.String()
+    amount = ma.Float(precision=2)
