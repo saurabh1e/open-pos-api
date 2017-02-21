@@ -1,5 +1,5 @@
 from flask_admin_impexp.admin_impexp import AdminImportExport
-
+from flask_security import current_user
 from src import admin, db
 from src.user.models import User, Role, PermissionSet, UserRole, RetailBrand, RetailShop, UserRetailShop, \
     Address, Locality, City, Customer, RegistrationDetail
@@ -11,7 +11,9 @@ from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Di
 class MyModel(AdminImportExport):
     page_size = 100
     column_display_pk = True
-    pass
+
+    def is_accessible(self):
+        return current_user.has_role('admin')
 
 
 class RetailShopAdmin(MyModel):
