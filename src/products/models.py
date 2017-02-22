@@ -25,7 +25,7 @@ class ProductTax(db.Model, BaseMixin, ReprMixin):
 
 class Tax(db.Model, BaseMixin, ReprMixin):
 
-    name = db.Column(db.String(15), nullable=False)
+    name = db.Column(db.String(25), nullable=False)
     value = db.Column(db.Float(precision=2), nullable=False)
     is_disabled = db.Column(db.Boolean(), default=False)
 
@@ -67,7 +67,7 @@ class ProductType(db.Model, BaseMixin, ReprMixin):
 
 
 class Tag(db.Model, BaseMixin, ReprMixin):
-    name = db.Column(db.String(10), unique=False, nullable=False)
+    name = db.Column(db.String(55), unique=False, nullable=False)
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
 
     products = db.relationship('Product', back_populates='tags', secondary='product_tag')

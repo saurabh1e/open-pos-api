@@ -55,6 +55,12 @@ class Order(db.Model, BaseMixin, ReprMixin):
     def items_count(cls):
         return select([func.Count(Item.id)]).where(Item.order_id == cls.id).as_scalar()
 
+    @hybrid_property
+    def amount_due(self):
+        if self.total and self.amount_paid:
+            return self.total - self.amount_paid
+        return self.total
+
 
 class Item(db.Model, BaseMixin, ReprMixin):
 

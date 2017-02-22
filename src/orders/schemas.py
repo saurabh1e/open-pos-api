@@ -13,8 +13,10 @@ class OrderSchema(BaseSchema):
     customer_id = ma.Integer()
     discount_id = ma.Integer()
     items_count = ma.Integer()
+    amount_due = ma.Integer()
 
     items = ma.Nested('ItemSchema', many=True, exclude=('order', 'order_id'), load=True)
+    retail_shop = ma.Nested('RetailShopSchema', many=False, only=('id', 'name'))
     customer = ma.Nested('CustomerSchema', many=False, load=True, only=('id', 'name', 'mobile_number'))
     discounts = ma.Nested('DiscountSchema', many=True, load=True)
 
@@ -22,7 +24,6 @@ class OrderSchema(BaseSchema):
 class ItemSchema(BaseSchema):
     class Meta:
         model = Item
-        exclude = ('created_on', 'updated_on')
         exclude = ('created_on', 'updated_on')
 
     product_id = ma.Integer(load=True, required=True)
