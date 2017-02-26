@@ -164,7 +164,8 @@ class ModelResource(ABC):
             db.session.rollback()
             raise SQlOperationalError(data=data, message='Operational Error', operation='Adding Resource', status=400)
         return {'success': True, 'message': 'Resource added successfully',
-                'data': self.schema().dump(objects, many=True).data}, 201
+                'data': self.schema(exclude=tuple(self.obj_exclude), only=tuple(self.obj_only))
+                    .dump(objects, many=True).data}, 201
 
     @abstractmethod
     def has_read_permission(self, qs)-> Type(db.Model):

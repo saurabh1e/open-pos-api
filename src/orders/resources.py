@@ -8,7 +8,7 @@ class OrderResource(ModelResource):
     model = Order
     schema = OrderSchema
 
-    optional = ('items',)
+    optional = ('items', 'time_line')
 
     filters = {
         'id': [ops.Equal],

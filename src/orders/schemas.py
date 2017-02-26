@@ -1,3 +1,5 @@
+from marshmallow import pre_load
+
 from src import ma, BaseSchema
 from .models import Order, Item, ItemTax, OrderDiscount, Status, ItemAddOn, Discount
 
@@ -10,15 +12,28 @@ class OrderSchema(BaseSchema):
     sub_total = ma.Float(precision=2)
     total = ma.Float(precision=2)
 
-    customer_id = ma.Integer()
+    retail_shop_id = ma.Integer(load=True, partia=False, required=True)
+    customer_id = ma.Integer(load=True, partial=True)
+    address_id = ma.Integer(load=True, partial=True)
     discount_id = ma.Integer()
-    items_count = ma.Integer()
+    items_count = ma.Integer(dump_only=True)
     amount_due = ma.Integer()
 
     items = ma.Nested('ItemSchema', many=True, exclude=('order', 'order_id'), load=True)
     retail_shop = ma.Nested('RetailShopSchema', many=False, only=('id', 'name'))
-    customer = ma.Nested('CustomerSchema', many=False, load=True, only=('id', 'name', 'mobile_number'))
+    customer = ma.Nested('CustomerSchema', many=False, load=True, only=['id', 'name', 'mobile_number'])
+    address = ma.Nested('AddressSchema', many=False, load=True, only=['id', 'name'])
     discounts = ma.Nested('DiscountSchema', many=True, load=True)
+
+    @pre_load()
+    def save(self, data):
+        if not data['customer']:
+            data.pop('customer')
+
+        if not data['address']:
+            data.pop('address')
+
+        return data
 
 
 class ItemSchema(BaseSchema):

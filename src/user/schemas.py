@@ -99,6 +99,7 @@ class AddressSchema(BaseSchema):
         model = Address
         exclude = ('created_on', 'updated_on', '')
 
+    name = ma.String(load=True, required=True)
     locality_id = ma.Integer(load_only=True)
     locality = ma.Nested('LocalitySchema', many=False, load=True, exclude=('city_id',))
 
