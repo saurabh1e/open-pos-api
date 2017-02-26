@@ -30,8 +30,8 @@ class RetailShopLocality(db.Model, BaseMixin):
 
 class CustomerAddress(db.Model, BaseMixin, ReprMixin):
 
-    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
-    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), index=True)
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'), unique=True)
 
     customer = db.relationship('Customer', foreign_keys=[customer_id])
     address = db.relationship('Address', foreign_keys=[address_id])

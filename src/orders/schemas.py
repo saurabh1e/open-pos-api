@@ -21,19 +21,9 @@ class OrderSchema(BaseSchema):
 
     items = ma.Nested('ItemSchema', many=True, exclude=('order', 'order_id'), load=True)
     retail_shop = ma.Nested('RetailShopSchema', many=False, only=('id', 'name'))
-    customer = ma.Nested('CustomerSchema', many=False, load=True, only=['id', 'name', 'mobile_number'])
-    address = ma.Nested('AddressSchema', many=False, load=True, only=['id', 'name'])
+    customer = ma.Nested('CustomerSchema', many=False, dump_only=True, only=['id', 'name', 'mobile_number'])
+    address = ma.Nested('AddressSchema', many=False, dump_only=True, only=['id', 'name'])
     discounts = ma.Nested('DiscountSchema', many=True, load=True)
-
-    @pre_load()
-    def save(self, data):
-        if not data['customer']:
-            data.pop('customer')
-
-        if not data['address']:
-            data.pop('address')
-
-        return data
 
 
 class ItemSchema(BaseSchema):

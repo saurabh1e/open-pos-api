@@ -145,7 +145,7 @@ class BaseView(Resource):
 
 class AssociationView(Resource):
 
-    api_methods = [Update]
+    api_methods = [Create]
 
     def __init__(self):
         if self.get_resource is not None:
@@ -163,18 +163,18 @@ class AssociationView(Resource):
             self.method_decorators.append(roles_accepted(*[i for i in self.resource.roles_accepted]))
             self.method_decorators.append(auth_token_required)
 
-    def update(self):
+    def post(self):
 
         data = request.json if isinstance(request.json, list) else [request.json]
         for d in data:
             try:
                 db.session.begin_nested()
                 if d['__action'] == 'add':
-                    self.resource.add_relation(request, d)
+                    self.resource.add_relation(d)
                 if d['__action'] == 'update':
-                    self.resource.update_relation(request, d)
+                    self.resource.update_relation(d)
                 elif d['__action'] == 'remove':
-                    self.resource.remove_relation(request, d)
+                    self.resource.remove_relation(d)
             except (ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException) as e:
                 db.session.rollback()
                 e.message['error'] = True

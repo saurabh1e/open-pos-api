@@ -50,7 +50,7 @@ class Order(db.Model, BaseMixin, ReprMixin):
 
     @hybrid_property
     def items_count(self):
-        return self.order_items.with_entities(func.Count(Item.id)).scalar()
+        return self.items.with_entities(func.Count(Item.id)).scalar()
 
     @items_count.expression
     def items_count(cls):

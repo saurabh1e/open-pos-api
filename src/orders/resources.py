@@ -10,6 +10,8 @@ class OrderResource(ModelResource):
 
     optional = ('items', 'time_line')
 
+    order_by = ('id',)
+
     filters = {
         'id': [ops.Equal],
         'customer_id': [ops.Equal],

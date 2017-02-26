@@ -116,12 +116,15 @@ class ModelResource(ABC):
                 db.session.rollback()
                 raise SQlOperationalError(data={}, message='Operational Error', operation='Adding Resource',
                                           status=400)
-            return {'success': True, 'message': 'obj updated successfully'}, 200
+            return {'success': True, 'message': 'obj updated successfully',
+                    'data': self.schema(exclude=tuple(self.obj_exclude), only=tuple(self.obj_only))
+                    .dump(obj).data}, 200
 
         return {'error': True, 'Message': 'Forbidden Permission Denied To Change Resource'}, 403
 
     def update_resource(self):
         data = request.json if isinstance(request.json, list) else [request.json]
+        objects = []
         for d in data:
             obj = self.schema().get_instance(d)
             obj, errors = self.schema().load(d, instance=obj)
@@ -134,6 +137,7 @@ class ModelResource(ABC):
                 return {'error': True, 'Message': 'Forbidden Permission Denied To Add Resource'}, 403
             try:
                 db.session.commit()
+                objects.append(obj)
             except IntegrityError:
                 db.session.rollback()
                 raise SQLIntegrityError(data=d, message='Integrity Error', operation='Updating Resource', status=400)
@@ -141,7 +145,9 @@ class ModelResource(ABC):
                 db.session.rollback()
                 raise SQlOperationalError(data=d, message='Operational Error', operation='Updating Resource',
                                           status=400)
-        return {'success': True, 'message': 'Resource Updated successfully'}, 201
+        return {'success': True, 'message': 'Resource Updated successfully',
+                'data': self.schema(exclude=tuple(self.obj_exclude), only=tuple(self.obj_only))
+                    .dump(objects, many=True).data}, 201
 
     def save_resource(self):
         data = request.json if isinstance(request.json, list) else [request.json]
@@ -192,6 +198,12 @@ class AssociationModelResource(ABC):
     associated_resources = {
 
     }
+
+    auth_required = False
+
+    roles_accepted: Tuple[str] = ()
+
+    roles_required: Tuple[str] = ()
 
     def add_relation(self, data):
         obj, errors = self.schema().load(data, session=db.session)

@@ -1,9 +1,10 @@
 from src.utils import ModelResource, operators as ops, AssociationModelResource
 
 from .schemas import User, UserSchema, Role, RoleSchema, UserRole, UserRoleSchema,\
-    RetailBrandSchema, RetailShopSchema, UserRetailShopSchema, CustomerSchema, AddressSchema, CitySchema, LocalitySchema
+    RetailBrandSchema, RetailShopSchema, UserRetailShopSchema, CustomerSchema, AddressSchema, CitySchema,\
+    LocalitySchema, CustomerAddressSchema
 
-from .models import RetailShop, RetailBrand, UserRetailShop, Customer, Locality, City, Address
+from .models import RetailShop, RetailBrand, UserRetailShop, Customer, Locality, City, Address, CustomerAddress
 
 
 class RoleResource(ModelResource):
@@ -213,3 +214,20 @@ class CityResource(ModelResource):
     def has_add_permission(self, obj):
         return True
 
+
+class CustomerAddressResource(AssociationModelResource):
+
+    model = CustomerAddress
+    schema = CustomerAddressSchema
+
+    def has_read_permission(self, qs):
+        return qs
+
+    def has_change_permission(self, obj):
+        return True
+
+    def has_delete_permission(self, obj):
+        return True
+
+    def has_add_permission(self, obj):
+        return True
