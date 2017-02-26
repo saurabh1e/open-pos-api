@@ -1,5 +1,3 @@
-from marshmallow import pre_load
-
 from src import ma, BaseSchema
 from .models import Order, Item, ItemTax, OrderDiscount, Status, ItemAddOn, Discount
 
@@ -12,9 +10,9 @@ class OrderSchema(BaseSchema):
     sub_total = ma.Float(precision=2)
     total = ma.Float(precision=2)
 
-    retail_shop_id = ma.Integer(load=True, partia=False, required=True)
-    customer_id = ma.Integer(load=True, partial=True)
-    address_id = ma.Integer(load=True, partial=True)
+    retail_shop_id = ma.Integer(load=True, required=True)
+    customer_id = ma.Integer(load=True, required=False, allow_none=True)
+    address_id = ma.Integer(load=True, required=False, partial=True, allow_none=True)
     discount_id = ma.Integer()
     items_count = ma.Integer(dump_only=True)
     amount_due = ma.Integer()

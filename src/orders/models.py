@@ -34,7 +34,7 @@ class Order(db.Model, BaseMixin, ReprMixin):
     retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id'), nullable=True)
     current_status_id = db.Column(db.Integer, db.ForeignKey('status.id'), nullable=True)
 
-    items = db.relationship('Item', uselist=True, back_populates='order', lazy='dynamic')
+    items = db.relationship('Item', uselist=True, back_populates='order', lazy='dynamic', cascade="all, delete-orphan")
     customer = db.relationship('Customer', foreign_keys=[customer_id])
     address = db.relationship('Address', foreign_keys=[address_id])
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id])
@@ -81,7 +81,8 @@ class Item(db.Model, BaseMixin, ReprMixin):
     children = db.relationship('Item', remote_side='Item.parent_id')
 
     product = db.relationship('Product', foreign_keys=[product_id])
-    order = db.relationship('Order', foreign_keys=[order_id], single_parent=True, back_populates='items')
+    order = db.relationship('Order', foreign_keys=[order_id], single_parent=True, back_populates='items',
+                            cascade="all, delete-orphan")
     taxes = db.relationship('ItemTax', uselist=True, cascade='all, delete-orphan',
                             back_populates='item')
     add_ons = db.relationship('ItemAddOn', uselist=True, cascade='all, delete-orphan',
