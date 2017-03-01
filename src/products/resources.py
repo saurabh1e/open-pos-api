@@ -39,6 +39,8 @@ class TagResource(ModelResource):
 
     optional = ('products', 'retail_shop')
 
+    order_by = ['retail_shop_id', 'id', 'name']
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
@@ -112,6 +114,8 @@ class DistributorResource(ModelResource):
     model = Distributor
     schema = DistributorSchema
 
+    order_by = ['retail_shop_id', 'id', 'name']
+
     optional = ('products', 'retail_shop', 'bills')
 
     filters = {
@@ -154,6 +158,8 @@ class BrandResource(ModelResource):
     model = Brand
     schema = BrandSchema
 
+    order_by = ['retail_shop_id', 'id', 'name']
+
     optional = ('products', 'retail_shop')
 
     filters = {
@@ -180,12 +186,12 @@ class TaxResource(ModelResource):
     schema = TaxSchema
     optional = ('products', 'retail_shop')
 
+    order_by = ['retail_shop_id', 'id', 'name']
+
     filters = {
         'name': [ops.Equal, ops.Contains],
         'retail_shop_id': [ops.Equal, ops.In]
     }
-
-    order_by = ['id']
 
     only = ()
 
@@ -210,6 +216,8 @@ class SaltResource(ModelResource):
     schema = SaltSchema
 
     optional = ('products', 'retail_shop')
+
+    order_by = ['retail_shop_id', 'id', 'name']
 
     filters = {
         'name': [ops.Equal, ops.Contains],

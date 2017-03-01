@@ -70,8 +70,8 @@ class OrderStatResource(Resource):
 
         total_orders, total_sales, total_items, total_quantity = orders.with_entities(func.Count(Order.id),
                                                                                       func.Sum(Order.total),
-                                                                                      func.Sum(Item.quantity),
-                                                                                      func.Sum(Item.product_id)).all()[0]
+                                                                                      func.Sum(Item.product_id),
+                                                                                      func.Sum(Item.quantity)).all()[0]
         new_customers = orders.join(Customer, and_(Customer.id == Order.customer_id))\
             .with_entities(func.Count(Order.customer_id)).scalar()
 

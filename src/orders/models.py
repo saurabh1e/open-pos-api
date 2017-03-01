@@ -28,6 +28,7 @@ class Order(db.Model, BaseMixin, ReprMixin):
     total = db.Column(db.Float(precision=2), default=0, nullable=True)
     amount_paid = db.Column(db.Float(precision=2), default=0, nullable=True)
     auto_discount = db.Column(db.Float(precision=2), default=0, nullable=True)
+    is_void = db.Column(db.Boolean(), default=False)
 
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'), nullable=True)
