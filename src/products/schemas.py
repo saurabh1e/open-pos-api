@@ -64,7 +64,7 @@ class DistributorBillSchema(BaseSchema):
     purchase_date = ma.Date()
     distributor_id = ma.Integer()
 
-    distributor = ma.Nested('DistributorSchema', many=False)
+    distributor = ma.Nested('DistributorSchema', many=False, only=('id', 'name'))
     purchased_items = ma.Nested('StockSchema', many=True, exclude=('distributor_bill', 'product_variation',
                                                                    'order_items', 'distributor_bill_id'))
 
@@ -75,7 +75,7 @@ class ProductSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
 
     name = ma.String()
-    description = ma.Dict()
+    description = ma.List(ma.Dict())
     sub_description = ma.String()
     distributor_id = ma.Integer()
     brand_id = ma.Integer()
@@ -107,18 +107,20 @@ class ProductSchema(BaseSchema):
 class StockSchema(BaseSchema):
     class Meta:
         model = Stock
-        exclude = ('created_on', 'updated_on')
+        exclude = ('created_on', 'updated_on', 'order_items')
 
     purchase_amount = ma.Float(precision=2)
     selling_amount = ma.Float(precision=2)
     units_purchased = ma.Integer()
     batch_number = ma.String()
     expiry_date = ma.Date()
+    product_name = ma.String()
     distributor_bill_id = ma.Integer()
     units_sold = ma.Integer(dump_ony=True)
+    expired = ma.Boolean()
 
-    # distributor_bill = ma.Nested('DistributorBillSchema', many=False)
-    # product = ma.Nested('ProductSchema', many=False)
+    distributor_bill = ma.Nested('DistributorBillSchema', many=False, only=('id', 'distributor', 'reference_number'))
+    product = ma.Nested('ProductSchema', many=False, only=('id', 'name', 'retail_shop'))
     # order_items = ma.Nested('OrderItemSchema', many=True)
 
 

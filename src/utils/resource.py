@@ -120,7 +120,7 @@ class ModelResource(ABC):
                     'data': self.schema(exclude=tuple(self.obj_exclude), only=tuple(self.obj_only))
                     .dump(obj).data}, 200
 
-        return {'error': True, 'Message': 'Forbidden Permission Denied To Change Resource'}, 403
+        return {'error': True, 'message': 'Forbidden Permission Denied To Change Resource'}, 403
 
     def update_resource(self):
         data = request.json if isinstance(request.json, list) else [request.json]
@@ -134,7 +134,7 @@ class ModelResource(ABC):
 
             if not self.has_change_permission(obj):
                 db.session.rollback()
-                return {'error': True, 'Message': 'Forbidden Permission Denied To Add Resource'}, 403
+                return {'error': True, 'message': 'Forbidden Permission Denied To Add Resource'}, 403
             try:
                 db.session.commit()
                 objects.append(obj)
@@ -160,7 +160,7 @@ class ModelResource(ABC):
             db.session.add_all(objects)
         else:
             db.session.rollback()
-            return {'error': True, 'Message': 'Forbidden Permission Denied To Add Resource'}, 403
+            return {'error': True, 'message': 'Forbidden Permission Denied To Add Resource'}, 403
         try:
             db.session.commit()
         except IntegrityError:

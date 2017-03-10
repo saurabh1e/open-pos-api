@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import and_, func, select, or_
 
@@ -53,6 +54,7 @@ class DistributorBill(db.Model, BaseMixin, ReprMixin):
     __repr_fields__ = ['id', 'distributor_id']
 
     purchase_date = db.Column(db.Date, nullable=False)
+    reference_number = db.Column(db.String(55), nullable=True)
     distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'), nullable=False)
 
     distributor = db.relationship('Distributor', single_parent=True, back_populates='bills')
@@ -136,6 +138,30 @@ class Product(db.Model, BaseMixin, ReprMixin):
                     .having(func.Count(func.Distinct(ProductSalt.salt_id)) == len(self.salts)).all()]
         return []
 
+    @hybrid_property
+    def is_short(self):
+        return self.min_stock >= self.available_stock
+
+    @is_short.expression
+    def is_short(self):
+        return self.min_stock >= self.available_stock
+
+    @hybrid_property
+    def product_name(self):
+        return self.name
+
+    @product_name.expression
+    def product_name(self):
+        return self.name
+
+    @hybrid_property
+    def distributor_name(self):
+        return self.distributor.name
+
+    @distributor_name.expression
+    def distributor_name(self):
+        return select([Distributor.name]).where(Distributor.id == self.distributor_id).as_scalar()
+
 
 class Salt(db.Model, BaseMixin, ReprMixin):
 
@@ -192,6 +218,46 @@ class Stock(db.Model, BaseMixin, ReprMixin):
     @units_sold.expression
     def units_sold(cls):
         return select([func.coalesce(func.Sum(Item.quantity), 0)]).where(Item.stock_id == cls.id).as_scalar()
+
+    @hybrid_property
+    def product_name(self):
+        return self.product.name
+
+    @product_name.expression
+    def product_name(self):
+        return select([Product.name]).where(Product.id == self.product_id).as_scalar()
+
+    @hybrid_property
+    def retail_shop_id(self):
+        return self.product.retail_shop_id
+
+    @retail_shop_id.expression
+    def retail_shop_id(self):
+        return select([Product.retail_shop_id]).where(Product.id == self.product_id).as_scalar()
+
+    @hybrid_property
+    def expired(self):
+        return not self.is_sold and not self.expiry_date >= datetime.now().date()
+
+    @expired.expression
+    def expired(self):
+        return and_(self.is_sold != True, self.expiry_date <= datetime.now().date()).label('expired')
+
+    @hybrid_property
+    def distributor_id(self):
+        return self.distributor_bill.distributor_id
+
+    @distributor_id.expression
+    def distributor_id(self):
+        return select([DistributorBill.distributor_id]).where(DistributorBill.id == self.distributor_bill_id).as_scalar()
+
+    @hybrid_property
+    def distributor_name(self):
+        return self.distributor_bill.distributor.name
+
+    @distributor_name.expression
+    def distributor_name(self):
+        return select([Distributor.name]).where(and_(DistributorBill.id == self.distributor_bill_id, Distributor.id == DistributorBill.distributor_id)).as_scalar()
 
 
 class Combo(db.Model, BaseMixin, ReprMixin):

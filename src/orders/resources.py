@@ -15,7 +15,7 @@ class OrderResource(ModelResource):
     filters = {
         'id': [ops.Equal],
         'customer_id': [ops.Equal],
-        'retail_shop_id': [ops.Equal],
+        'retail_shop_id': [ops.Equal, ops.In],
         'current_status_id':  [ops.Equal],
     }
 

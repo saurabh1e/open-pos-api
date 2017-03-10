@@ -96,7 +96,7 @@ class BaseView(Resource):
                                               'data': self.resource.schema(exclude=tuple(self.resource.obj_exclude),
                                                                            only=tuple(self.resource.obj_only))
                                              .dump(resources.items, many=True).data, 'total': resources.total}), 200)
-            return make_response(jsonify({'error': True, 'Message': 'No Resource Found'}), 404)
+            return make_response(jsonify({'error': True, 'message': 'No Resource Found'}), 404)
 
     def post(self):
         try:
@@ -139,7 +139,7 @@ class BaseView(Resource):
                 return make_response(jsonify({}), 204)
             else:
                 return make_response(
-                    jsonify({'error': True, 'Message': 'Forbidden Permission Denied To Delete Resource'}), 403)
+                    jsonify({'error': True, 'message': 'Forbidden Permission Denied To Delete Resource'}), 403)
         return make_response(jsonify({'error': True, 'message': 'Resource not found'}), 404)
 
 

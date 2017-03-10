@@ -15,8 +15,12 @@ class ProductResource(ModelResource):
     filters = {
         'id': [ops.Equal, ops.In],
         'name': [ops.Equal, ops.Contains],
+        'product_name': [ops.Equal, ops.Contains],
+        'distributor_name': [ops.Equal, ops.Contains],
         'available_stocks': [ops.Equal, ops.Greater],
-        'retail_shop_id': [ops.Equal, ops.In]
+        'distributor_id': [ops.Equal, ops.In],
+        'retail_shop_id': [ops.Equal, ops.In],
+        'is_short': [ops.Boolean]
     }
     order_by = ['retail_shop_id', 'id', 'name']
 
@@ -82,14 +86,20 @@ class StockResource(ModelResource):
     model = Stock
     schema = StockSchema
 
-    optional = ('products', 'retail_shop')
+    optional = ('product', 'retail_shop', 'distributor_bill', 'product_name', 'retail_shop_id')
 
     filters = {
-        'units_available': [ops.Equal],
-        'units_sold': [ops.Equal, ops.Lesser]
+        'is_sold': [ops.Boolean],
+        'expired': [ops.Boolean],
+        'units_available': [ops.Equal, ops.Greater, ops.Greaterequal],
+        'units_sold': [ops.Equal, ops.Lesser, ops.LesserEqual],
+        'product_name': [ops.Contains, ops.Equal],
+        'retail_shop_id': [ops.Equal, ops.In],
+        'distributor_id': [ops.Equal, ops.In],
+        'distributor_name': [ops.Contains, ops.Equal],
     }
 
-    order_by = ['id']
+    order_by = ['id', 'expiry_date', 'units_sold']
 
     only = ()
 

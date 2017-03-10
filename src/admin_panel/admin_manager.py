@@ -20,6 +20,11 @@ class RetailShopAdmin(MyModel):
 
     form_excluded_columns = ('products', 'orders', 'brands', 'distributors')
 
+
+class DistributorBillAdmin(MyModel):
+
+    form_excluded_columns = ('purchased_items',)
+
 admin.add_view(MyModel(User, session=db.session))
 admin.add_view(MyModel(Customer, session=db.session))
 admin.add_view(MyModel(Role, session=db.session))
@@ -45,7 +50,7 @@ admin.add_view(MyModel(Tax, session=db.session))
 admin.add_view(MyModel(Product, session=db.session))
 admin.add_view(MyModel(ProductType, session=db.session))
 admin.add_view(MyModel(Distributor, session=db.session))
-admin.add_view(MyModel(DistributorBill, session=db.session))
+admin.add_view(DistributorBillAdmin(DistributorBill, session=db.session))
 admin.add_view(MyModel(Stock, session=db.session))
 
 
