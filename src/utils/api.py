@@ -91,7 +91,6 @@ class BaseView(Resource):
             resources = objects.paginate(page=self.resource.page, per_page=self.resource.limit)
 
             if resources.items:
-
                 return make_response(jsonify({'success': True,
                                               'data': self.resource.schema(exclude=tuple(self.resource.obj_exclude),
                                                                            only=tuple(self.resource.obj_only))

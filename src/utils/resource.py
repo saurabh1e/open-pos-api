@@ -163,8 +163,9 @@ class ModelResource(ABC):
             return {'error': True, 'message': 'Forbidden Permission Denied To Add Resource'}, 403
         try:
             db.session.commit()
-        except IntegrityError:
+        except IntegrityError as e:
             db.session.rollback()
+            print(e)
             raise SQLIntegrityError(data=data, message='Integrity Error', operation='Adding Resource', status=400)
         except OperationalError:
             db.session.rollback()

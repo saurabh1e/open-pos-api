@@ -1,4 +1,6 @@
 from datetime import datetime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import desc, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import and_, func, select, or_
 
@@ -6,56 +8,62 @@ from src import db, BaseMixin, ReprMixin
 from src.orders.models import Item
 
 
-class Brand(db.Model, BaseMixin, ReprMixin):
+class Brand(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(20), nullable=False)
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='brands')
     products = db.relationship('Product', uselist=True, back_populates='brand')
 
 
-class ProductTax(db.Model, BaseMixin, ReprMixin):
+class ProductTax(BaseMixin, db.Model, ReprMixin):
 
-    tax_id = db.Column(db.Integer, db.ForeignKey('tax.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    tax_id = db.Column(UUID, db.ForeignKey('tax.id'), index=True)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True)
 
     tax = db.relationship('Tax', foreign_keys=[tax_id])
     product = db.relationship('Product', foreign_keys=[product_id])
 
+    UniqueConstraint(tax_id, product_id)
 
-class Tax(db.Model, BaseMixin, ReprMixin):
+
+class Tax(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(25), nullable=False)
     value = db.Column(db.Float(precision=2), nullable=False)
     is_disabled = db.Column(db.Boolean(), default=False)
 
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='taxes')
     products = db.relationship('Product', back_populates='taxes', secondary='product_tax', lazy='dynamic')
 
+    UniqueConstraint(name, retail_shop_id)
 
-class Distributor(db.Model, BaseMixin, ReprMixin):
+
+class Distributor(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(127), nullable=False)
-    phone_numbers = db.Column(db.ARRAY(item_type='varchar'))
-    emails = db.Column(db.ARRAY(item_type='varchar'))
+    phone_numbers = db.Column(db.JSON)
+    emails = db.Column(db.JSON)
 
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     bills = db.relationship('DistributorBill', uselist=True, back_populates='distributor', lazy='dynamic')
     products = db.relationship('Product', uselist=True, back_populates='distributor', lazy='dynamic')
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='distributors')
 
+    UniqueConstraint(name, retail_shop_id)
 
-class DistributorBill(db.Model, BaseMixin, ReprMixin):
+
+class DistributorBill(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['id', 'distributor_id']
 
     purchase_date = db.Column(db.Date, nullable=False)
     reference_number = db.Column(db.String(55), nullable=True)
-    distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'), nullable=False)
+    distributor_id = db.Column(UUID, db.ForeignKey('distributor.id'), nullable=False, index=True)
 
     distributor = db.relationship('Distributor', single_parent=True, back_populates='bills')
     purchased_items = db.relationship('Stock', uselist=True, back_populates='distributor_bill', lazy='dynamic')
@@ -77,42 +85,46 @@ class DistributorBill(db.Model, BaseMixin, ReprMixin):
         return select([Distributor.retail_shop_id]).where(Distributor.id == self.distributor_id).as_scalar()
 
 
-class ProductType(db.Model, BaseMixin, ReprMixin):
+class ProductType(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.TEXT())
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
 
-class Tag(db.Model, BaseMixin, ReprMixin):
+class Tag(BaseMixin, db.Model, ReprMixin):
     name = db.Column(db.String(55), unique=False, nullable=False)
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     products = db.relationship('Product', back_populates='tags', secondary='product_tag')
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='tags')
 
+    UniqueConstraint(name, retail_shop_id)
 
-class ProductTag(db.Model, BaseMixin, ReprMixin):
 
-    tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+class ProductTag(BaseMixin, db.Model, ReprMixin):
+
+    tag_id = db.Column(UUID, db.ForeignKey('tag.id'), index=True)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True)
 
     tag = db.relationship('Tag', foreign_keys=[tag_id])
     product = db.relationship('Product', foreign_keys=[product_id])
 
+    UniqueConstraint(tag_id, product_id)
 
-class Product(db.Model, BaseMixin, ReprMixin):
 
-    name = db.Column(db.String(55), unique=False, nullable=False)
+class Product(BaseMixin, db.Model, ReprMixin):
+
+    name = db.Column(db.String(127), unique=False, nullable=False)
     min_stock = db.Column(db.SmallInteger, nullable=False)
     auto_discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
-    description = db.Column(db.JSON, nullable=True)
+    description = db.Column(db.JSON(), nullable=True)
     sub_description = db.Column(db.Text(), nullable=True)
     is_disabled = db.Column(db.Boolean(), default=False)
 
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
-    distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'))
-    brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
+    distributor_id = db.Column(UUID, db.ForeignKey('distributor.id'), index=True)
+    brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True)
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, back_populates='products')
     taxes = db.relationship('Tax', back_populates='products', secondary='product_tax')
@@ -128,15 +140,16 @@ class Product(db.Model, BaseMixin, ReprMixin):
     @hybrid_property
     def available_stock(self):
         return self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None))\
-            .with_entities(func.Sum(Stock.units_purchased)-func.Sum(Stock.units_sold)).scalar()
+            .with_entities(func.coalesce(func.Sum(Stock.units_purchased), 0)-func.coalesce(func.Sum(Stock.units_sold),
+                                                                                           0)).scalar()
 
     @hybrid_property
     def available_stocks(self):
-        return self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None)).all()
+        return self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None, Stock.expired == False)).all()
 
     @available_stock.expression
     def available_stock(cls):
-        return select([func.Sum(Stock.units_purchased)-func.Sum(Stock.units_sold)])\
+        return select([func.coalesce(func.Sum(Stock.units_purchased), 0)-func.coalesce(func.Sum(Stock.units_sold), 0)])\
             .where(and_(or_(Stock.is_sold == False, Stock.is_sold == None), Stock.product_id == cls.id)).as_scalar()
 
     @hybrid_property
@@ -156,29 +169,25 @@ class Product(db.Model, BaseMixin, ReprMixin):
 
     @hybrid_property
     def last_purchase_amount(self):
-        return self.stocks.order_by(-Stock.id).first().purchase_amount
+        return self.stocks.order_by(desc(Stock.purchase_date)).first().purchase_amount
 
     @hybrid_property
     def last_selling_amount(self):
-        return self.stocks.order_by(-Stock.id).first().selling_amount
+        return self.stocks.order_by(desc(Stock.purchase_date)).first().selling_amount
 
     @hybrid_property
     def stock_required(self):
-        return abs(self.min_stock - self.available_stock) if self.min_stock > self.available_stock else 0
+        return abs(self.min_stock - self.available_stock)
+
+    @stock_required.expression
+    def stock_required(self):
+        return self.min_stock - self.available_stock
 
     @hybrid_property
     def is_short(self):
         return self.min_stock >= self.available_stock
 
-    @is_short.expression
-    def is_short(self):
-        return self.min_stock >= self.available_stock
-
     @hybrid_property
-    def product_name(self):
-        return self.name
-
-    @product_name.expression
     def product_name(self):
         return self.name
 
@@ -191,29 +200,33 @@ class Product(db.Model, BaseMixin, ReprMixin):
         return select([Distributor.name]).where(Distributor.id == self.distributor_id).as_scalar()
 
 
-class Salt(db.Model, BaseMixin, ReprMixin):
+class Salt(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(127), unique=True, nullable=False)
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     products = db.relationship('Product', back_populates='salts', secondary='product_salt')
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False)
 
+    UniqueConstraint(name, retail_shop_id)
 
-class ProductSalt(db.Model, BaseMixin, ReprMixin):
+
+class ProductSalt(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['salt_id', 'product_id']
 
-    salt_id = db.Column(db.Integer, db.ForeignKey('salt.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    salt_id = db.Column(UUID, db.ForeignKey('salt.id'), index=True)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True)
 
     salt = db.relationship('Salt', foreign_keys=[salt_id])
     product = db.relationship('Product', foreign_keys=[product_id])
 
+    UniqueConstraint(salt_id, product_id)
 
-class Stock(db.Model, BaseMixin, ReprMixin):
 
-    __repr_fields__ = ['id', 'product_id']
+class Stock(BaseMixin, db.Model, ReprMixin):
+
+    __repr_fields__ = ['id', 'purchase_date']
 
     purchase_amount = db.Column(db.Float(precision=2))
     selling_amount = db.Column(db.Float(precision=2))
@@ -223,8 +236,8 @@ class Stock(db.Model, BaseMixin, ReprMixin):
     purchase_date = db.Column(db.Date, nullable=True, default=db.func.current_timestamp())
     is_sold = db.Column(db.Boolean(), default=False, index=True)
 
-    distributor_bill_id = db.Column(db.Integer, db.ForeignKey('distributor_bill.id'), nullable=False, index=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False, index=True)
+    distributor_bill_id = db.Column(UUID, db.ForeignKey('distributor_bill.id'), nullable=True, index=True)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), nullable=False, index=True)
 
     distributor_bill = db.relationship('DistributorBill', single_parent=True, back_populates='purchased_items')
     product = db.relationship('Product', single_parent=True, foreign_keys=product_id)
@@ -285,40 +298,41 @@ class Stock(db.Model, BaseMixin, ReprMixin):
 
     @distributor_name.expression
     def distributor_name(self):
-        return select([Distributor.name]).where(and_(DistributorBill.id == self.distributor_bill_id, Distributor.id == DistributorBill.distributor_id)).as_scalar()
+        return select([Distributor.name]).where(and_(DistributorBill.id == self.distributor_bill_id,
+                                                     Distributor.id == DistributorBill.distributor_id)).as_scalar()
 
 
-class Combo(db.Model, BaseMixin, ReprMixin):
+class Combo(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(55), nullable=False)
     products = db.relationship('Product', back_populates='combos', secondary='combo_product')
 
 
-class ComboProduct(db.Model, BaseMixin, ReprMixin):
+class ComboProduct(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['combo_id', 'product_id']
 
-    combo_id = db.Column(db.Integer, db.ForeignKey('combo.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    combo_id = db.Column(UUID, db.ForeignKey('combo.id'), index=True)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True)
 
     combo = db.relationship('Combo', foreign_keys=[combo_id])
     product = db.relationship('Product', foreign_keys=[product_id])
 
 
-class AddOn(db.Model, BaseMixin, ReprMixin):
+class AddOn(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(127), unique=True, nullable=False)
-    retail_shop_id = db.Column(db.Integer, db.ForeignKey('retail_shop.id', ondelete='CASCADE'))
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
     products = db.relationship('Product', back_populates='add_ons', secondary='product_add_on')
 
 
-class ProductAddOn(db.Model, BaseMixin, ReprMixin):
+class ProductAddOn(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['add_on_id', 'product_id']
 
-    add_on_id = db.Column(db.Integer, db.ForeignKey('add_on.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    add_on_id = db.Column(UUID, db.ForeignKey('add_on.id'), index=True)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True)
 
     add_on = db.relationship('AddOn', foreign_keys=[add_on_id])
     product = db.relationship('Product', foreign_keys=[product_id])

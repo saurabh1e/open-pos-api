@@ -10,10 +10,10 @@ class OrderSchema(BaseSchema):
     sub_total = ma.Float(precision=2)
     total = ma.Float(precision=2)
 
-    retail_shop_id = ma.Integer(load=True, required=True)
-    customer_id = ma.Integer(load=True, required=False, allow_none=True)
-    address_id = ma.Integer(load=True, required=False, partial=True, allow_none=True)
-    discount_id = ma.Integer()
+    retail_shop_id = ma.UUID(load=True, required=True)
+    customer_id = ma.UUID(load=True, required=False, allow_none=True)
+    address_id = ma.UUID(load=True, required=False, partial=True, allow_none=True)
+    discount_id = ma.UUID()
     items_count = ma.Integer(dump_only=True)
     amount_due = ma.Integer()
 
@@ -29,11 +29,11 @@ class ItemSchema(BaseSchema):
         model = Item
         exclude = ('created_on', 'updated_on')
 
-    product_id = ma.Integer(load=True, required=True)
+    product_id = ma.UUID(load=True, required=True)
     unit_price = ma.Float(precision=2)
     quantity = ma.Integer()
-    order_id = ma.Integer()
-    stock_id = ma.Integer()
+    order_id = ma.UUID()
+    stock_id = ma.UUID()
     discount = ma.Float()
     discounted_total_price = ma.Float(dump_only=True)
     discounted_unit_price = ma.Float(dump_only=True)
@@ -54,8 +54,8 @@ class ItemTaxSchema(BaseSchema):
 
     tax_value = ma.Float(precision=2)
 
-    item_id = ma.Integer(load=True)
-    tax_id = ma.Integer(load=True)
+    item_id = ma.UUID(load=True)
+    tax_id = ma.UUID(load=True)
 
     tax = ma.Nested('TaxSchema', many=False, only=('id', 'name'))
     item = ma.Nested('ItemSchema', many=False)

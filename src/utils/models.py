@@ -1,8 +1,8 @@
 import re
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.dialects.postgresql import UUID, TEXT
-from uuid import uuid4
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import text
 
 db = SQLAlchemy()
 
@@ -21,7 +21,7 @@ class BaseMixin(object):
 
     __mapper_args__ = {'always_refresh': True}
 
-    id = db.Column(UUID, index=True, default=uuid4, primary_key=True)
+    id = db.Column(UUID(as_uuid=False), index=True, primary_key=True, server_default=text("uuid_generate_v4()"))
     created_on = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
     updated_on = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp())
 
@@ -29,7 +29,7 @@ class BaseMixin(object):
 class ReprMixin(object):
     """Provides a string representible form for objects."""
 
-    __repr_fields__ = ['id', 'name']
+    __repr_fields__ = ['name']
 
     def __repr__(self):
         fields =  {f:getattr(self, f, '<BLANK>') for f in self.__repr_fields__}

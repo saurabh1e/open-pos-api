@@ -9,7 +9,7 @@ class BrandSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
 
     name = ma.String()
-    retail_shop_id = ma.Integer()
+    retail_shop_id = ma.UUID()
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
@@ -19,7 +19,7 @@ class TagSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
 
     name = ma.String()
-    retail_shop_id = ma.Integer()
+    retail_shop_id = ma.UUID()
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
@@ -29,8 +29,8 @@ class ProductTaxSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
         fields = ('tax_id', 'product_id')
 
-    tax_id = ma.Integer(load=True)
-    product_id = ma.Integer(load=True)
+    tax_id = ma.UUID(load=True)
+    product_id = ma.UUID(load=True)
 
 
 class TaxSchema(BaseSchema):
@@ -38,8 +38,9 @@ class TaxSchema(BaseSchema):
         model = Tax
         exclude = ('created_on', 'updated_on')
 
-    name = ma.String()
-    value = ma.Float(precision=2)
+    name = ma.String(load=True)
+    value = ma.Float(precision=2, load=True)
+    retail_shop_id = ma.UUID(load=True)
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
@@ -51,7 +52,7 @@ class DistributorSchema(BaseSchema):
     name = ma.String()
     phone_numbers = ma.List(ma.Integer())
     emails = ma.List(ma.Email())
-    retail_shop_id = ma.Integer()
+    retail_shop_id = ma.UUID()
 
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
     bills = ma.Nested('DistributorBillSchema', many=True, exclude=('distributor', 'distributor_id'))
@@ -63,11 +64,11 @@ class DistributorBillSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
 
     purchase_date = ma.Date(load=True)
-    distributor_id = ma.Integer(load=True)
+    distributor_id = ma.UUID(load=True)
     total_items = ma.Integer(dump_only=True)
     bill_amount = ma.Integer(dump_only=True)
 
-    distributor = ma.Nested('DistributorSchema', many=False, only=('id', 'name'))
+    distributor = ma.Nested('DistributorSchema', many=False, only=('id', 'name', 'retail_shop'))
     purchased_items = ma.Nested('StockSchema', many=True, exclude=('distributor_bill', 'order_items', 'product'), load=True)
 
 
@@ -77,11 +78,11 @@ class ProductSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
 
     name = ma.String()
-    description = ma.List(ma.Dict())
-    sub_description = ma.String()
-    distributor_id = ma.Integer()
-    brand_id = ma.Integer()
-    retail_shop_id = ma.Integer()
+    description = ma.List(ma.Dict(), allow_none=True)
+    sub_description = ma.String(allow_none=True)
+    distributor_id = ma.UUID()
+    brand_id = ma.UUID()
+    retail_shop_id = ma.UUID()
     distributor = ma.Nested('DistributorSchema', many=False, dump_only=True, only=('id', 'name'))
     brand = ma.Nested('BrandSchema', many=False, dump_only=True, only=('id', 'name'))
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
@@ -93,6 +94,7 @@ class ProductSchema(BaseSchema):
     last_selling_amount = ma.Float(precision=2, dump_only=True)
     last_purchase_amount = ma.Float(precision=2, dump_only=True)
     stock_required = ma.Integer(dump_only=True)
+    is_short = ma.Boolean()
 
     _links = ma.Hyperlinks(
         {
@@ -121,19 +123,13 @@ class StockSchema(BaseSchema):
     batch_number = ma.String()
     expiry_date = ma.Date()
     product_name = ma.String()
-    product_id = ma.Integer(load=True)
-    distributor_bill_id = ma.Integer()
+    product_id = ma.UUID(load=True)
+    distributor_bill_id = ma.UUID(allow_none=True)
     units_sold = ma.Integer(dump_ony=True)
     expired = ma.Boolean()
 
     distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor', 'reference_number'))
     product = ma.Nested('ProductSchema', many=False, only=('id', 'name', 'retail_shop'), dump_only=True)
-    # order_items = ma.Nested('OrderItemSchema', many=True)
-
-    @pre_load
-    def save_data(self, data):
-        print(data)
-        return data
 
 
 class SaltSchema(BaseSchema):
@@ -141,7 +137,7 @@ class SaltSchema(BaseSchema):
         model = Salt
         exclude = ('created_on', 'updated_on')
 
-    retail_shop_id = ma.Integer()
+    retail_shop_id = ma.UUID()
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
 
 
@@ -149,12 +145,12 @@ class ComboSchema(BaseSchema):
     class Meta:
         model = Combo
         exclude = ('created_on', 'updated_on')
-    retail_shop_id = ma.Integer()
+    retail_shop_id = ma.UUID()
 
 
 class AddOnSchema(BaseSchema):
     class Meta:
         model = AddOn
         exclude = ('created_on', 'updated_on')
-    retail_shop_id = ma.Integer()
+    retail_shop_id = ma.UUID()
 

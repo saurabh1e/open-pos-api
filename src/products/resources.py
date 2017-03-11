@@ -22,10 +22,12 @@ class ProductResource(ModelResource):
         'name': [ops.Equal, ops.Contains],
         'product_name': [ops.Equal, ops.Contains],
         'distributor_name': [ops.Equal, ops.Contains],
-        'available_stocks': [ops.Equal, ops.Greater],
+        'stock_required': [ops.Equal, ops.Greater, ops.Greaterequal],
+        'available_stock': [ops.Equal, ops.Greater, ops.Greaterequal],
         'distributor_id': [ops.Equal, ops.In],
         'retail_shop_id': [ops.Equal, ops.In],
-        'is_short': [ops.Boolean]
+        'is_short': [ops.Boolean],
+        'is_disabled': [ops.Boolean],
     }
     order_by = ['retail_shop_id', 'id', 'name']
 
@@ -40,8 +42,13 @@ class ProductResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_product')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_product')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_product'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class TagResource(ModelResource):
@@ -70,8 +77,13 @@ class TagResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_tag')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_tag')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_tag'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class ProductTaxResource(AssociationModelResource):
@@ -92,8 +104,13 @@ class ProductTaxResource(AssociationModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_product_tax')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_product_tax')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_product_tax'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class StockResource(ModelResource):
@@ -116,7 +133,7 @@ class StockResource(ModelResource):
         'distributor_name': [ops.Contains, ops.Equal],
     }
 
-    order_by = ['id', 'expiry_date', 'units_sold']
+    order_by = ['expiry_date', 'units_sold']
 
     only = ()
 
@@ -133,8 +150,14 @@ class StockResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_stock')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_stock')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_stock'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
+                                                .filter(Product.id == obj.product_id).scalar()):
+                return False
+        return True
 
 
 class DistributorResource(ModelResource):
@@ -164,8 +187,13 @@ class DistributorResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_distributor')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_distributor')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_distributor'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class DistributorBillResource(ModelResource):
@@ -232,8 +260,13 @@ class BrandResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_brand')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_brand')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_brand'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class TaxResource(ModelResource):
@@ -266,8 +299,13 @@ class TaxResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_tax')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_tax')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_tax'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class SaltResource(ModelResource):
@@ -296,8 +334,13 @@ class SaltResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_salt')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_salt')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_salt'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class AddOnResource(ModelResource):
@@ -324,8 +367,13 @@ class AddOnResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_add_on')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_add_on')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_add_on'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class ComboResource(ModelResource):
@@ -352,6 +400,11 @@ class ComboResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_combo')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_combo')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_combo'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 

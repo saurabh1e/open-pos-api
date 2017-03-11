@@ -35,8 +35,14 @@ class OrderResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_order')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_order')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_order'):
+            return False
+
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return false
+        return True
 
 
 class ItemTaxResource(ModelResource):

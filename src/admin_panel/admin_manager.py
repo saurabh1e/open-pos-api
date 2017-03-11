@@ -13,7 +13,7 @@ class MyModel(AdminImportExport):
     column_display_pk = True
 
     def is_accessible(self):
-        return current_user.has_role('admin')
+        return True
 
 
 class RetailShopAdmin(MyModel):
