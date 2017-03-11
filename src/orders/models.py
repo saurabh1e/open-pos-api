@@ -110,6 +110,14 @@ class Item(db.Model, BaseMixin, ReprMixin):
     def is_combo(self):
         return self.combo_id is not None
 
+    @hybrid_property
+    def retail_shop_id(self):
+        return self.order.retail_shop_id
+
+    @retail_shop_id.expression
+    def retail_shop_id(self):
+        return select([Order.retail_shop_id]).where(Order.id == self.order_id).as_scalar()
+
 
 class ItemAddOn(db.Model, BaseMixin, ReprMixin):
 

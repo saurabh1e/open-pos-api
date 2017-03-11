@@ -1,6 +1,6 @@
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from flask_security import RoleMixin, UserMixin
-from sqlalchemy import UniqueConstraint, func, select, and_
+from sqlalchemy import UniqueConstraint, func
 
 from src.orders.models import Order
 from src import db, BaseMixin, ReprMixin
@@ -100,6 +100,17 @@ class UserRole(db.Model, BaseMixin):
     UniqueConstraint(user_id, role_id)
 
 
+class UserPermission(db.Model, BaseMixin):
+
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id', ondelete='CASCADE'))
+    permission_id = db.Column(db.Integer(), db.ForeignKey('permission.id', ondelete='CASCADE'))
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    permission = db.relationship('Permission', foreign_keys=[permission_id])
+
+    UniqueConstraint(user_id, permission_id)
+
+
 class Role(db.Model, BaseMixin, RoleMixin, ReprMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
@@ -122,6 +133,7 @@ class User(db.Model, BaseMixin, UserMixin, ReprMixin):
     current_login_ip = db.Column(db.String(45))
     login_count = db.Column(db.Integer)
     roles = db.relationship('Role', back_populates='users', secondary='user_role')
+    permissions = db.relationship('Permission', back_populates='users', secondary='user_permission', lazy='dynamic')
     retail_shops = db.relationship('RetailShop', back_populates='users', secondary='user_retail_shop', lazy='dynamic')
 
     @hybrid_property
@@ -133,15 +145,24 @@ class User(db.Model, BaseMixin, UserMixin, ReprMixin):
     def retail_shop_ids(self):
         return [i[0] for i in self.retail_shops.with_entities(RetailShop.id).all()]
 
+    @hybrid_method
+    def has_shop_access(self, shop_id):
+        return db.session.query(self.retail_shops.filter(RetailShop.id == shop_id).exists()).scalar()
+
     @hybrid_property
     def brand_ids(self):
         return set([i[0] for i in self.retail_shops.with_entities(RetailShop.retail_brand_id).all()])
 
+    @hybrid_method
+    def has_permission(self, permission):
+        return db.session.query(self.permissions.filter(Permission.name == permission).exists()).scalar()
 
-class PermissionSet(db.Model, BaseMixin, ReprMixin):
+
+class Permission(db.Model, BaseMixin, ReprMixin):
 
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+    users = db.relationship('User', back_populates='permissions', secondary='user_permission')
 
 
 class Customer(db.Model, BaseMixin, ReprMixin):

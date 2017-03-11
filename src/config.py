@@ -25,7 +25,7 @@ class BaseConfig:
     SECURITY_CONFIRMABLE = True
     SECURITY_RECOVERABLE = True
     SECURITY_POST_LOGIN_VIEW = '/admin/'
-    AUTH_HEADER_NAME = 'Authorization'
+    SECURITY_TOKEN_AUTHENTICATION_HEADER = 'Authorization'
     MAX_AGE = 86400
 
     @staticmethod
@@ -38,7 +38,7 @@ class BaseConfig:
 class DevConfig(BaseConfig):
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:@localhost/medi_pos'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:@localhost/pos'
 
 
 class TestConfig(BaseConfig):

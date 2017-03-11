@@ -1,5 +1,5 @@
 from src import ma, BaseSchema
-from .models import User, Role, PermissionSet, UserRole, RetailShop, RetailBrand, UserRetailShop, \
+from .models import User, Role, Permission, UserRole, RetailShop, RetailBrand, UserRetailShop, \
     Customer, Address, Locality, City, RegistrationDetail, CustomerAddress
 
 
@@ -44,10 +44,10 @@ class UserRoleSchema(BaseSchema):
     role = ma.Nested('RoleSchema', many=False)
 
 
-class PermissionSetSchema(BaseSchema):
+class PermissionSchema(BaseSchema):
 
     class Meta:
-        model = PermissionSet
+        model = Permission
         exclude = ('users', 'created_on', 'updated_on')
 
 

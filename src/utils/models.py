@@ -1,6 +1,8 @@
 import re
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.dialects.postgresql import UUID, TEXT
+from uuid import uuid4
 
 db = SQLAlchemy()
 
@@ -19,7 +21,7 @@ class BaseMixin(object):
 
     __mapper_args__ = {'always_refresh': True}
 
-    id = db.Column(db.Integer, primary_key=True, index=True)
+    id = db.Column(UUID, index=True, default=uuid4, primary_key=True)
     created_on = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
     updated_on = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp())
 

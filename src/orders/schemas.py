@@ -44,6 +44,7 @@ class ItemSchema(BaseSchema):
                         only=('id', 'name'))
     combo = ma.Nested('ComboSchema', many=False, only=('id', 'name'))
     taxes = ma.Nested('ItemTaxSchema', many=True, exclude=('item',))
+    add_ons = ma.Nested('AddOnSchema', many=True, exclude=('item',))
 
 
 class ItemTaxSchema(BaseSchema):

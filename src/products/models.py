@@ -58,7 +58,23 @@ class DistributorBill(db.Model, BaseMixin, ReprMixin):
     distributor_id = db.Column(db.Integer, db.ForeignKey('distributor.id'), nullable=False)
 
     distributor = db.relationship('Distributor', single_parent=True, back_populates='bills')
-    purchased_items = db.relationship('Stock', uselist=True, back_populates='distributor_bill')
+    purchased_items = db.relationship('Stock', uselist=True, back_populates='distributor_bill', lazy='dynamic')
+
+    @hybrid_property
+    def bill_amount(self):
+        return self.purchased_items.with_entities(func.Sum(Stock.purchase_amount)).scalar()
+
+    @hybrid_property
+    def total_items(self):
+        return self.purchased_items.with_entities(func.Count(Stock.id)).scalar()
+
+    @hybrid_property
+    def retail_shop_id(self):
+        return self.distributor.retail_shop_id
+
+    @retail_shop_id.expression
+    def retail_shop_id(self):
+        return select([Distributor.retail_shop_id]).where(Distributor.id == self.distributor_id).as_scalar()
 
 
 class ProductType(db.Model, BaseMixin, ReprMixin):
@@ -137,6 +153,18 @@ class Product(db.Model, BaseMixin, ReprMixin):
                     .filter(ProductSalt.salt_id.in_([i.id for i in self.salts])).group_by(Product.id)
                     .having(func.Count(func.Distinct(ProductSalt.salt_id)) == len(self.salts)).all()]
         return []
+
+    @hybrid_property
+    def last_purchase_amount(self):
+        return self.stocks.order_by(-Stock.id).first().purchase_amount
+
+    @hybrid_property
+    def last_selling_amount(self):
+        return self.stocks.order_by(-Stock.id).first().selling_amount
+
+    @hybrid_property
+    def stock_required(self):
+        return abs(self.min_stock - self.available_stock) if self.min_stock > self.available_stock else 0
 
     @hybrid_property
     def is_short(self):

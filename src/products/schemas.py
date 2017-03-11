@@ -1,3 +1,4 @@
+from marshmallow import pre_load
 from src import ma, BaseSchema
 from .models import Brand, Distributor, DistributorBill, Product, Tag, Stock, ProductTax, Tax, Combo, AddOn, Salt
 
@@ -61,12 +62,13 @@ class DistributorBillSchema(BaseSchema):
         model = DistributorBill
         exclude = ('created_on', 'updated_on')
 
-    purchase_date = ma.Date()
-    distributor_id = ma.Integer()
+    purchase_date = ma.Date(load=True)
+    distributor_id = ma.Integer(load=True)
+    total_items = ma.Integer(dump_only=True)
+    bill_amount = ma.Integer(dump_only=True)
 
     distributor = ma.Nested('DistributorSchema', many=False, only=('id', 'name'))
-    purchased_items = ma.Nested('StockSchema', many=True, exclude=('distributor_bill', 'product_variation',
-                                                                   'order_items', 'distributor_bill_id'))
+    purchased_items = ma.Nested('StockSchema', many=True, exclude=('distributor_bill', 'order_items', 'product'), load=True)
 
 
 class ProductSchema(BaseSchema):
@@ -88,6 +90,10 @@ class ProductSchema(BaseSchema):
     similar_products = ma.List(ma.Integer)
     tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
     salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
+    last_selling_amount = ma.Float(precision=2, dump_only=True)
+    last_purchase_amount = ma.Float(precision=2, dump_only=True)
+    stock_required = ma.Integer(dump_only=True)
+
     _links = ma.Hyperlinks(
         {
             'distributor': ma.URLFor('pos.distributor_view', slug='<distributor_id>'),
@@ -115,13 +121,19 @@ class StockSchema(BaseSchema):
     batch_number = ma.String()
     expiry_date = ma.Date()
     product_name = ma.String()
+    product_id = ma.Integer(load=True)
     distributor_bill_id = ma.Integer()
     units_sold = ma.Integer(dump_ony=True)
     expired = ma.Boolean()
 
-    distributor_bill = ma.Nested('DistributorBillSchema', many=False, only=('id', 'distributor', 'reference_number'))
-    product = ma.Nested('ProductSchema', many=False, only=('id', 'name', 'retail_shop'))
+    distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor', 'reference_number'))
+    product = ma.Nested('ProductSchema', many=False, only=('id', 'name', 'retail_shop'), dump_only=True)
     # order_items = ma.Nested('OrderItemSchema', many=True)
+
+    @pre_load
+    def save_data(self, data):
+        print(data)
+        return data
 
 
 class SaltSchema(BaseSchema):
