@@ -2,9 +2,10 @@ from src.utils import ModelResource, operators as ops, AssociationModelResource
 
 from .schemas import User, UserSchema, Role, RoleSchema, UserRole, UserRoleSchema,\
     RetailBrandSchema, RetailShopSchema, UserRetailShopSchema, CustomerSchema, AddressSchema, CitySchema,\
-    LocalitySchema, CustomerAddressSchema
+    LocalitySchema, CustomerAddressSchema, CustomerTransactionSchema
 
-from .models import RetailShop, RetailBrand, UserRetailShop, Customer, Locality, City, Address, CustomerAddress
+from .models import RetailShop, RetailBrand, UserRetailShop, Customer, Locality, City, Address, CustomerAddress,\
+    CustomerTransaction
 
 
 class RoleResource(ModelResource):
@@ -141,14 +142,15 @@ class CustomerResource(ModelResource):
     model = Customer
     schema = CustomerSchema
 
-    optional = ('addresses', 'orders')
+    optional = ('addresses', 'orders', 'retail_brand', 'transactions')
 
     filters = {
         'name': [ops.Equal, ops.Contains],
-        'number': [ops.Equal, ops.Contains],
+        'mobile_number': [ops.Equal, ops.Contains],
         'email': [ops.Equal, ops.Contains],
         'id': [ops.Equal],
-        'retail_brand_id': [ops.Equal]
+        'retail_brand_id': [ops.Equal],
+        'retail_shop_id': [ops.Equal, ops.In]
     }
 
     def has_read_permission(self, qs):
@@ -219,6 +221,24 @@ class CustomerAddressResource(AssociationModelResource):
 
     model = CustomerAddress
     schema = CustomerAddressSchema
+
+    def has_read_permission(self, qs):
+        return qs
+
+    def has_change_permission(self, obj):
+        return True
+
+    def has_delete_permission(self, obj):
+        return True
+
+    def has_add_permission(self, obj):
+        return True
+
+
+class CustomerTransactionResource(ModelResource):
+
+    model = CustomerTransaction
+    schema = CustomerTransactionSchema
 
     def has_read_permission(self, qs):
         return qs

@@ -12,7 +12,7 @@ class OrderResource(ModelResource):
 
     optional = ('items', 'time_line')
 
-    order_by = ('id',)
+    order_by = ('id', 'invoice_number')
 
     filters = {
         'id': [ops.Equal],

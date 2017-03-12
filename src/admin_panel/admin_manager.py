@@ -2,7 +2,7 @@ from flask_admin_impexp.admin_impexp import AdminImportExport
 from flask_security import current_user
 from src import admin, db
 from src.user.models import User, Role, Permission, UserRole, RetailBrand, RetailShop, UserRetailShop, \
-    Address, Locality, City, Customer, RegistrationDetail, CustomerAddress
+    Address, Locality, City, Customer, RegistrationDetail, CustomerAddress, CustomerTransaction
 from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
     DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt
@@ -10,10 +10,9 @@ from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Di
 
 class MyModel(AdminImportExport):
     page_size = 100
-    column_display_pk = True
 
     def is_accessible(self):
-        return True
+        return current_user.has_role('admin')
 
 
 class RetailShopAdmin(MyModel):
@@ -27,6 +26,7 @@ class DistributorBillAdmin(MyModel):
 
 admin.add_view(MyModel(User, session=db.session))
 admin.add_view(MyModel(Customer, session=db.session))
+admin.add_view(MyModel(CustomerTransaction, session=db.session))
 admin.add_view(MyModel(Role, session=db.session))
 admin.add_view(MyModel(UserRole, session=db.session))
 admin.add_view(MyModel(Permission, session=db.session))

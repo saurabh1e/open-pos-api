@@ -1,3 +1,6 @@
+from marshmallow import post_load
+from flask_security import current_user
+from sqlalchemy import func
 from src import ma, BaseSchema
 from .models import Order, Item, ItemTax, OrderDiscount, Status, ItemAddOn, Discount
 
@@ -14,14 +17,23 @@ class OrderSchema(BaseSchema):
     customer_id = ma.UUID(load=True, required=False, allow_none=True)
     address_id = ma.UUID(load=True, required=False, partial=True, allow_none=True)
     discount_id = ma.UUID()
+    user_id = ma.UUID(dump_only=True)
     items_count = ma.Integer(dump_only=True)
     amount_due = ma.Integer()
+    invoice_number = ma.Integer(dump_only=True)
 
     items = ma.Nested('ItemSchema', many=True, exclude=('order', 'order_id'), load=True)
     retail_shop = ma.Nested('RetailShopSchema', many=False, only=('id', 'name'))
     customer = ma.Nested('CustomerSchema', many=False, dump_only=True, only=['id', 'name', 'mobile_number'])
+    created_by = ma.Nested('UserSchema', many=False, dump_only=True, only=['id', 'name'])
     address = ma.Nested('AddressSchema', many=False, dump_only=True, only=['id', 'name'])
     discounts = ma.Nested('DiscountSchema', many=True, load=True)
+
+    @post_load
+    def save_data(self, obj):
+        obj.user_id = current_user.id
+        obj.invoice_number = Order.query.with_entities(func.Count(Order.id)).filter(Order.retail_shop_id == obj.retail_shop_id).scalar()+1
+        return obj
 
 
 class ItemSchema(BaseSchema):

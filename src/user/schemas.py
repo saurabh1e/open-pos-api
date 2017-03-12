@@ -1,6 +1,6 @@
 from src import ma, BaseSchema
 from .models import User, Role, Permission, UserRole, RetailShop, RetailBrand, UserRetailShop, \
-    Customer, Address, Locality, City, RegistrationDetail, CustomerAddress
+    Customer, Address, Locality, City, RegistrationDetail, CustomerAddress, CustomerTransaction
 
 
 class UserSchema(BaseSchema):
@@ -89,10 +89,17 @@ class UserRetailShopSchema(BaseSchema):
 class CustomerSchema(BaseSchema):
     class Meta:
         model = Customer
-        exclude = ('created_on', 'updated_on')
+        exclude = ('updated_on',)
 
     mobile_number = ma.Integer()
+    total_orders = ma.Integer(dump_only=True)
+    total_billing = ma.Float(precison=2, dump_only=True)
+    amount_due = ma.Float(precison=2, dump_only=True)
     addresses = ma.Nested('AddressSchema', many=True, load=False, partial=True)
+    retail_brand_id = ma.UUID(load=True)
+    retail_shop_id = ma.List(ma.UUID(), load=True)
+    retail_brand = ma.Nested('RetailBrandSchema', many=False, only=('id', 'name'))
+    transactions = ma.Nested('CustomerTransactionSchema', many=True, only=('id', 'amount', 'created_on'))
 
 
 class AddressSchema(BaseSchema):
@@ -133,3 +140,12 @@ class CustomerAddressSchema(BaseSchema):
 
     address_id = ma.UUID(load=True, partial=False)
     customer_id = ma.UUID(load=True, partial=False)
+
+
+class CustomerTransactionSchema(BaseSchema):
+    class Meta:
+        model = CustomerTransaction
+        exclude = ('updated_on',)
+
+    amount = ma.Float(precision=2, load=True)
+    customer_id = ma.UUID(load=True, partial=False, allow_none=False)

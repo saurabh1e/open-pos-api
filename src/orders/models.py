@@ -30,14 +30,17 @@ class Order(BaseMixin, db.Model, ReprMixin):
     amount_paid = db.Column(db.Float(precision=2), default=0, nullable=True)
     auto_discount = db.Column(db.Float(precision=2), default=0, nullable=True)
     is_void = db.Column(db.Boolean(), default=False)
+    invoice_number = db.Column(db.Integer)
 
     customer_id = db.Column(UUID, db.ForeignKey('customer.id'), nullable=True, index=True)
+    user_id = db.Column(UUID, db.ForeignKey('user.id'), nullable=False, index=True)
     address_id = db.Column(UUID, db.ForeignKey('address.id'), nullable=True, index=True)
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id'), nullable=False, index=True)
     current_status_id = db.Column(UUID, db.ForeignKey('status.id'), nullable=True, index=True)
 
     items = db.relationship('Item', uselist=True, back_populates='order', lazy='dynamic', cascade="all, delete-orphan")
     customer = db.relationship('Customer', foreign_keys=[customer_id])
+    created_by = db.relationship('User', foreign_keys=[user_id])
     address = db.relationship('Address', foreign_keys=[address_id])
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id])
     discounts = db.relationship('Discount', secondary='order_discount', uselist=True)

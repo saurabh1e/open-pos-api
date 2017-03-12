@@ -123,7 +123,7 @@ class Role(BaseMixin, db.Model, RoleMixin, ReprMixin):
 class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     email = db.Column(db.String(127), unique=True, nullable=False)
     password = db.Column(db.String(255), default='', nullable=False)
-    name = db.Column(db.String(127), nullable=True)
+    name = db.Column(db.String(55), nullable=False)
     mobile_number = db.Column(db.String(20), unique=True, nullable=False)
 
     active = db.Column(db.Boolean())
@@ -137,11 +137,6 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     roles = db.relationship('Role', back_populates='users', secondary='user_role')
     permissions = db.relationship('Permission', back_populates='users', secondary='user_permission', lazy='dynamic')
     retail_shops = db.relationship('RetailShop', back_populates='users', secondary='user_retail_shop', lazy='dynamic')
-
-    @hybrid_property
-    def name(self):
-        return '{0}'.format(self.user_profile.first_name) + (' {0}'.format(self.user_profile.last_name)) \
-                if self.user_profile.first_name else ''
 
     @hybrid_property
     def retail_shop_ids(self):
@@ -179,6 +174,28 @@ class Customer(BaseMixin, db.Model, ReprMixin):
     retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id])
     addresses = db.relationship('Address', secondary='customer_address')
     orders = db.relationship('Order', uselist=True, lazy='dynamic')
+    transactions = db.relationship('CustomerTransaction', uselist=True, lazy='dynamic')
+
+    @hybrid_property
+    def total_orders(self):
+        return self.orders.with_entities(func.coalesce(func.Count(Order.id), 0)).scalar()
+
+    @hybrid_property
+    def total_billing(self):
+        return self.orders.with_entities(func.coalesce(func.Sum(Order.total), 0)).scalar()
+
+    @hybrid_property
+    def amount_due(self):
+        return self.orders.with_entities(func.coalesce(func.Sum(Order.total), 0) -
+                                         func.coalesce(func.Sum(Order.amount_paid), 0)).scalar() - \
+               self.transactions.with_entities(func.coalesce(func.Sum(CustomerTransaction.amount), 0)).scalar()
+
+
+class CustomerTransaction(BaseMixin, db.Model, ReprMixin):
+
+    amount = db.Column(db.Float(precision=2), nullable=False, default=0)
+    customer_id = db.Column(UUID, db.ForeignKey('customer.id'), nullable=False, index=True)
+    customer = db.relationship('Customer', foreign_keys=[customer_id])
 
 
 class Address(BaseMixin, db.Model, ReprMixin):

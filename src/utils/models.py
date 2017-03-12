@@ -29,10 +29,10 @@ class BaseMixin(object):
 class ReprMixin(object):
     """Provides a string representible form for objects."""
 
-    __repr_fields__ = ['name']
+    __repr_fields__ = ['id', 'name']
 
     def __repr__(self):
-        fields =  {f:getattr(self, f, '<BLANK>') for f in self.__repr_fields__}
+        fields = {f: getattr(self, f, '<BLANK>') for f in self.__repr_fields__}
         pattern = ['{0}={{{0}}}'.format(f) for f in self.__repr_fields__]
         pattern = ' '.join(pattern)
         pattern = pattern.format(**fields)

@@ -4,7 +4,7 @@ from flask import request, jsonify, make_response, redirect
 from src import BaseView, AssociationView
 from .resources import UserResource, UserRoleResource, RoleResource,\
     RetailBrandResource, RetailShopResource, UserRetailShopResource, CustomerResource, AddressResource,\
-    LocalityResource, CityResource, CustomerAddressResource
+    LocalityResource, CityResource, CustomerAddressResource, CustomerTransactionResource
 from src import api
 from .models import User
 
@@ -122,4 +122,12 @@ class CustomerAddressView(AssociationView):
     @classmethod
     def get_resource(cls):
         return CustomerAddressResource
+
+
+@api.register()
+class CustomerTransactionView(BaseView):
+
+    @classmethod
+    def get_resource(cls):
+        return CustomerTransactionResource
 
