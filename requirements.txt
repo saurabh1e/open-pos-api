@@ -18,7 +18,7 @@ entrypoints==0.2.2
 et-xmlfile==1.0.1
 Flask==0.12
 Flask-Admin==1.4.2
--e git://github.com/saurabh1e/flask_admin_impexp.git@2231ca4804ee2bf5fe60294dc22fc2f0f0c37992#egg=flask_admin_impexp
+-e git://github.com/saurabh1e/flask_admin_impexp.git@master#egg=flask_admin_impexp
 Flask-Cors==3.0.2
 Flask-Excel==0.0.5
 Flask-Login==0.3.2
