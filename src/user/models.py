@@ -56,6 +56,7 @@ class RetailBrand(BaseMixin, db.Model, ReprMixin):
 
     retail_shops = db.relationship('RetailShop', back_populates='retail_brand', uselist=True,
                                    cascade='all, delete-orphan')
+    users = db.relationship('User', back_populates='retail_brand', uselist=True, cascade='all, delete-orphan')
     addresses = db.relationship('Address', secondary='retail_brand_address')
 
 
@@ -134,6 +135,10 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     last_login_ip = db.Column(db.String(45))
     current_login_ip = db.Column(db.String(45))
     login_count = db.Column(db.Integer)
+
+    retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True)
+
+    retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id], back_populates='users')
     roles = db.relationship('Role', back_populates='users', secondary='user_role')
     permissions = db.relationship('Permission', back_populates='users', secondary='user_permission', lazy='dynamic')
     retail_shops = db.relationship('RetailShop', back_populates='users', secondary='user_retail_shop', lazy='dynamic')
@@ -141,6 +146,11 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     @hybrid_property
     def retail_shop_ids(self):
         return [i[0] for i in self.retail_shops.with_entities(RetailShop.id).all()]
+
+    @retail_shop_ids.expression
+    def retail_shop_ids(self):
+        from sqlalchemy import select
+        return select([UserRetailShop.retail_shop_id]).where(UserRetailShop.user_id == self.id).label('retail_shop_ids').limit(1)
 
     @hybrid_method
     def has_shop_access(self, shop_id):
@@ -154,11 +164,16 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     def has_permission(self, permission):
         return db.session.query(self.permissions.filter(Permission.name == permission).exists()).scalar()
 
+    @hybrid_property
+    def is_owner(self):
+        return self.has_role('owner')
+
 
 class Permission(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+    type = db.Column(db.String(15), nullable=True)
     users = db.relationship('User', back_populates='permissions', secondary='user_permission')
 
 

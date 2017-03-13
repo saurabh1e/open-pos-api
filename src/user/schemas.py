@@ -7,8 +7,7 @@ class UserSchema(BaseSchema):
 
     class Meta:
         model = User
-        exclude = ('created_on', 'updated_on', 'password', 'current_login_at', 'current_login_ip',
-                   'last_login_at', 'last_login_ip', 'login_count', 'confirmed_at')
+        exclude = ('updated_on', 'password')
 
     id = ma.UUID(dump_only=True)
     email = ma.Email(unique=True, primary_key=True, required=True)

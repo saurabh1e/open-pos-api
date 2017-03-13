@@ -48,19 +48,26 @@ class UserResource(ModelResource):
     model = User
     schema = UserSchema
 
-    optional = ('retail_shops',)
+    auth_required = True
+
+    roles_accepted = ('admin', 'owner')
+
+    optional = ('retail_shops', 'current_login_at', 'current_login_ip', 'created_on',
+                'last_login_at', 'last_login_ip', 'login_count', 'confirmed_at')
 
     filters = {
         'username': [ops.Equal, ops.Contains],
+        'name': [ops.Equal, ops.Contains],
         'active': [ops.Boolean],
-        'id': [ops.Equal]
+        'id': [ops.Equal],
+        'retail_brand_id': [ops.Equal, ops.In]
     }
 
     related_resource = {
 
     }
 
-    order_by = ['email', 'id']
+    order_by = ['email', 'id', 'name']
 
     only = ()
 
