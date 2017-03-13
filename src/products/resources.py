@@ -28,6 +28,8 @@ class ProductResource(ModelResource):
         'retail_shop_id': [ops.Equal, ops.In],
         'is_short': [ops.Boolean],
         'is_disabled': [ops.Boolean],
+        'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual],
+        'updated_on': [ops.Greaterequal, ops.DateGreaterEqual, ops.DateEqual, ops.DateLesserEqual]
     }
     order_by = ['retail_shop_id', 'id', 'name']
 
@@ -131,6 +133,8 @@ class StockResource(ModelResource):
         'retail_shop_id': [ops.Equal, ops.In],
         'distributor_id': [ops.Equal, ops.In],
         'distributor_name': [ops.Contains, ops.Equal],
+        'updated_on': [ops.DateGreaterEqual, ops.DateEqual, ops.DateLesserEqual],
+        'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual]
     }
 
     order_by = ['expiry_date', 'units_sold']

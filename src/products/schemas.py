@@ -115,7 +115,7 @@ class ProductSchema(BaseSchema):
 class StockSchema(BaseSchema):
     class Meta:
         model = Stock
-        exclude = ('created_on', 'updated_on', 'order_items')
+        exclude = ('order_items', 'created_on', 'updated_on')
 
     purchase_amount = ma.Float(precision=2)
     selling_amount = ma.Float(precision=2)
@@ -128,7 +128,8 @@ class StockSchema(BaseSchema):
     units_sold = ma.Integer(dump_ony=True)
     expired = ma.Boolean()
 
-    distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor', 'reference_number'))
+    distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor',
+                                                                                            'reference_number'))
     product = ma.Nested('ProductSchema', many=False, only=('id', 'name', 'retail_shop'), dump_only=True)
 
 

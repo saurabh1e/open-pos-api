@@ -228,12 +228,11 @@ class Stock(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['id', 'purchase_date']
 
-    purchase_amount = db.Column(db.Float(precision=2))
-    selling_amount = db.Column(db.Float(precision=2))
-    units_purchased = db.Column(db.SmallInteger, nullable=False)
+    purchase_amount = db.Column(db.Float(precision=2), nullable=False, default=0)
+    selling_amount = db.Column(db.Float(precision=2), nullable=False, default=0)
+    units_purchased = db.Column(db.SmallInteger, nullable=False, default=1)
     batch_number = db.Column(db.String(25), nullable=True)
-    expiry_date = db.Column(db.Date, nullable=False)
-    purchase_date = db.Column(db.Date, nullable=True, default=db.func.current_timestamp())
+    expiry_date = db.Column(db.Date, nullable=True)
     is_sold = db.Column(db.Boolean(), default=False, index=True)
 
     distributor_bill_id = db.Column(UUID, db.ForeignKey('distributor_bill.id'), nullable=True, index=True)
@@ -300,6 +299,14 @@ class Stock(BaseMixin, db.Model, ReprMixin):
     def distributor_name(self):
         return select([Distributor.name]).where(and_(DistributorBill.id == self.distributor_bill_id,
                                                      Distributor.id == DistributorBill.distributor_id)).as_scalar()
+
+    @hybrid_property
+    def purchase_date(self):
+        return self.distributor_bill.purchase_date
+
+    @purchase_date.expression
+    def purchase_date(cls):
+        return select([DistributorBill.purchase_date]).where(DistributorBill.id == cls.distributor_bill_id).as_scalar()
 
 
 class Combo(BaseMixin, db.Model, ReprMixin):

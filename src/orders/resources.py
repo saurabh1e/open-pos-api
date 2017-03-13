@@ -100,7 +100,10 @@ class ItemResource(ModelResource):
         'id': [ops.Equal, ops.In],
         'order_id': [ops.Equal, ops.In],
         'product_id': [ops.Equal, ops.In],
+        'retail_shop_id': [ops.Equal, ops.In],
         'stock_id': [ops.Equal, ops.In],
+        'update_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual],
+        'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual]
     }
 
     order_by = ['id']

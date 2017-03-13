@@ -23,7 +23,7 @@ class BaseMixin(object):
 
     id = db.Column(UUID(as_uuid=False), index=True, primary_key=True, server_default=text("uuid_generate_v4()"))
     created_on = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
-    updated_on = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp())
+    updated_on = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp(), default=db.func.current_timestamp())
 
 
 class ReprMixin(object):

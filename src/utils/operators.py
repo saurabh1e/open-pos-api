@@ -1,5 +1,7 @@
 from abc import ABC, abstractstaticmethod
+from datetime import datetime
 from sqlalchemy import func
+from sqlalchemy import cast, Date
 
 
 class Operators(ABC):
@@ -86,3 +88,27 @@ class LesserEqual(Operators):
     @staticmethod
     def prepare_queryset(query, model, key, value):
         return query.filter(getattr(model, key) <= value[0])
+
+
+class DateEqual(Operators):
+    op = 'date_equal'
+
+    @staticmethod
+    def prepare_queryset(query, model, key, value):
+        return query.filter(cast(getattr(model, key), Date) == datetime.strptime(value[0], '%Y-%m-%dT%H:%M:%S.%fZ').date())
+
+
+class DateGreaterEqual(Operators):
+    op = 'date_gte'
+
+    @staticmethod
+    def prepare_queryset(query, model, key, value):
+        return query.filter(cast(getattr(model, key), Date) >= datetime.strptime(value[0], '%Y-%m-%dT%H:%M:%S.%fZ').date())
+
+
+class DateLesserEqual(Operators):
+    op = 'date_lte'
+
+    @staticmethod
+    def prepare_queryset(query, model, key, value):
+        return query.filter(cast(getattr(model, key), Date) <= datetime.strptime(value[0], '%Y-%m-%dT%H:%M:%S.%fZ').date())
