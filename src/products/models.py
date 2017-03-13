@@ -302,7 +302,7 @@ class Stock(BaseMixin, db.Model, ReprMixin):
 
     @hybrid_property
     def purchase_date(self):
-        if self.distributor_id:
+        if self.distributor_bill_id:
             return self.distributor_bill.purchase_date
         return None
 
