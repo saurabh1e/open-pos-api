@@ -38,7 +38,7 @@ class BaseConfig:
 class DevConfig(BaseConfig):
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:@localhost/pos'
+    SQLALCHEMY_DATABASE_URI = 'postgresql+pygresql://postgres:@localhost/pos'
 
 
 class TestConfig(BaseConfig):
