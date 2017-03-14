@@ -88,13 +88,13 @@ class ProductSchema(BaseSchema):
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
     mrp = ma.Integer(dump_only=True)
     available_stock = ma.Integer(dump_only=True)
-    similar_products = ma.List(ma.Integer)
+    similar_products = ma.List(ma.Integer, dump_only=True)
     tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
     salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
     last_selling_amount = ma.Float(precision=2, dump_only=True)
     last_purchase_amount = ma.Float(precision=2, dump_only=True)
     stock_required = ma.Integer(dump_only=True)
-    is_short = ma.Boolean()
+    is_short = ma.Boolean(dump_only=True)
 
     _links = ma.Hyperlinks(
         {
