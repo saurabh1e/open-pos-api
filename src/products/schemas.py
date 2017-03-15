@@ -83,18 +83,22 @@ class ProductSchema(BaseSchema):
     distributor_id = ma.UUID()
     brand_id = ma.UUID()
     retail_shop_id = ma.UUID()
-    distributor = ma.Nested('DistributorSchema', many=False, dump_only=True, only=('id', 'name'))
-    brand = ma.Nested('BrandSchema', many=False, dump_only=True, only=('id', 'name'))
-    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
+    default_quantity = ma.Float(precision=2, partila=True)
+    quantity_label = ma.String(load=True, allow_none=True)
+    is_loose = ma.Boolean(load=True, allow_none=True)
     mrp = ma.Integer(dump_only=True)
     available_stock = ma.Integer(dump_only=True)
     similar_products = ma.List(ma.Integer, dump_only=True)
-    tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
-    salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
+
     last_selling_amount = ma.Float(precision=2, dump_only=True)
     last_purchase_amount = ma.Float(precision=2, dump_only=True)
     stock_required = ma.Integer(dump_only=True)
     is_short = ma.Boolean(dump_only=True)
+    distributor = ma.Nested('DistributorSchema', many=False, dump_only=True, only=('id', 'name'))
+    brand = ma.Nested('BrandSchema', many=False, dump_only=True, only=('id', 'name'))
+    retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
+    tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
+    salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
 
     _links = ma.Hyperlinks(
         {
@@ -127,6 +131,7 @@ class StockSchema(BaseSchema):
     distributor_bill_id = ma.UUID(allow_none=True)
     units_sold = ma.Integer(dump_ony=True)
     expired = ma.Boolean()
+    quantity_label = ma.String(dump_only=True)
 
     distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor',
                                                                                             'reference_number'))

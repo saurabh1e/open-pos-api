@@ -73,7 +73,7 @@ class Item(BaseMixin, db.Model, ReprMixin):
     __repr_fields__ = ['id', 'order_id', 'product_id']
 
     unit_price = db.Column(db.Float(precision=2))
-    quantity = db.Column(db.SmallInteger)
+    quantity = db.Column(db.Float(precision=2))
     discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
 
     parent_id = db.Column(UUID, db.ForeignKey('item.id'), nullable=True, index=True)

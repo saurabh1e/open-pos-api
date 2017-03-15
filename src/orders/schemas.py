@@ -43,7 +43,7 @@ class ItemSchema(BaseSchema):
 
     product_id = ma.UUID(load=True, required=True)
     unit_price = ma.Float(precision=2)
-    quantity = ma.Integer()
+    quantity = ma.Float(precision=2)
     order_id = ma.UUID()
     stock_id = ma.UUID()
     discount = ma.Float()

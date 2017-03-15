@@ -121,6 +121,10 @@ class Product(BaseMixin, db.Model, ReprMixin):
     description = db.Column(db.JSON(), nullable=True)
     sub_description = db.Column(db.Text(), nullable=True)
     is_disabled = db.Column(db.Boolean(), default=False)
+    default_quantity = db.Column(db.Float(precision=2), default=1)
+    quantity_label = db.Column(db.Enum('KG', 'GM', 'MG', 'L', 'ML', 'TAB', 'SYRUP', 'OTH', name='varchar'),
+                               default='KG', nullable=True)
+    is_loose = db.Column(db.Boolean(), default=False)
 
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
     distributor_id = db.Column(UUID, db.ForeignKey('distributor.id'), index=True)
@@ -309,6 +313,14 @@ class Stock(BaseMixin, db.Model, ReprMixin):
     @purchase_date.expression
     def purchase_date(cls):
         return select([DistributorBill.purchase_date]).where(DistributorBill.id == cls.distributor_bill_id).as_scalar()
+
+    @hybrid_property
+    def quantity_label(self):
+        return self.product.quantity_label
+
+    @quantity_label.expression
+    def quantity_label(cls):
+        return select([Product.quantity_label]).where(Product.id == cls.product_id).as_scalar()
 
 
 class Combo(BaseMixin, db.Model, ReprMixin):
