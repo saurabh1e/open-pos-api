@@ -31,6 +31,7 @@ class Order(BaseMixin, db.Model, ReprMixin):
     auto_discount = db.Column(db.Float(precision=2), default=0, nullable=True)
     is_void = db.Column(db.Boolean(), default=False)
     invoice_number = db.Column(db.Integer)
+    reference_number = db.Column(db.String(12), nullable=True)
 
     customer_id = db.Column(UUID, db.ForeignKey('customer.id'), nullable=True, index=True)
     user_id = db.Column(UUID, db.ForeignKey('user.id'), nullable=False, index=True)

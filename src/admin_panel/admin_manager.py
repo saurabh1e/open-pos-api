@@ -24,6 +24,19 @@ class DistributorBillAdmin(MyModel):
 
     form_excluded_columns = ('purchased_items',)
 
+
+class InventoryAdmin(MyModel):
+    column_sortable_list = ('name',)
+    column_searchable_list = ('id', 'retail_shop_id', 'name')
+    pass
+
+
+class InventoryAssociationAdmin(MyModel):
+
+    column_searchable_list = ('id', 'retail_shop_id')
+    pass
+
+
 admin.add_view(MyModel(User, session=db.session))
 admin.add_view(MyModel(Customer, session=db.session))
 admin.add_view(MyModel(CustomerTransaction, session=db.session))
@@ -43,11 +56,11 @@ admin.add_view(MyModel(ProductTax, session=db.session))
 admin.add_view(MyModel(Tag, session=db.session))
 admin.add_view(MyModel(AddOn, session=db.session))
 admin.add_view(MyModel(Combo, session=db.session))
-admin.add_view(MyModel(Salt, session=db.session))
+admin.add_view(InventoryAdmin(Salt, session=db.session))
 admin.add_view(MyModel(ProductSalt, session=db.session))
-admin.add_view(MyModel(Brand, session=db.session))
+admin.add_view(InventoryAdmin(Brand, session=db.session))
 admin.add_view(MyModel(Tax, session=db.session))
-admin.add_view(MyModel(Product, session=db.session))
+admin.add_view(InventoryAdmin(Product, session=db.session))
 admin.add_view(MyModel(ProductType, session=db.session))
 admin.add_view(MyModel(Distributor, session=db.session))
 admin.add_view(DistributorBillAdmin(DistributorBill, session=db.session))

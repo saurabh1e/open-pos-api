@@ -97,6 +97,10 @@ class RetailShopResource(ModelResource):
         'id': [ops.Equal, ops.In]
     }
 
+    auth_required = True
+
+    roles_accepted = ('admin', 'owner')
+
     def has_read_permission(self, qs):
         return qs
 

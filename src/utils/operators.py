@@ -112,3 +112,15 @@ class DateLesserEqual(Operators):
     @staticmethod
     def prepare_queryset(query, model, key, value):
         return query.filter(cast(getattr(model, key), Date) <= datetime.strptime(value[0], '%Y-%m-%dT%H:%M:%S.%fZ').date())
+
+
+class DateBetween(Operators):
+    op = 'date_btw'
+
+    @staticmethod
+    def prepare_queryset(query, model, key, values):
+        if len(values) == 1:
+            values = values[0].split(',')
+        return query.filter(cast(getattr(model, key), Date)
+                            .between(datetime.strptime(values[0], '%Y-%m-%dT%H:%M:%S.%fZ').date(),
+                                     datetime.strptime(values[1], '%Y-%m-%dT%H:%M:%S.%fZ').date()))

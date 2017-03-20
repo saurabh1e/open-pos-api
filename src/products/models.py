@@ -219,8 +219,8 @@ class ProductSalt(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['salt_id', 'product_id']
 
-    salt_id = db.Column(UUID, db.ForeignKey('salt.id'), index=True)
-    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True)
+    salt_id = db.Column(UUID, db.ForeignKey('salt.id'), index=True, nullable=False)
+    product_id = db.Column(UUID, db.ForeignKey('product.id'), index=True, nullable=False)
 
     salt = db.relationship('Salt', foreign_keys=[salt_id])
     product = db.relationship('Product', foreign_keys=[product_id])

@@ -14,6 +14,7 @@ class OrderSchema(BaseSchema):
     total = ma.Float(precision=2)
 
     retail_shop_id = ma.UUID(load=True, required=True)
+    reference_number = ma.String(load=True, required=False, partial=True)
     customer_id = ma.UUID(load=True, required=False, allow_none=True)
     address_id = ma.UUID(load=True, required=False, partial=True, allow_none=True)
     discount_id = ma.UUID()

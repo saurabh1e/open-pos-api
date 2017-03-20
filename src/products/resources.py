@@ -14,6 +14,10 @@ class ProductResource(ModelResource):
 
     auth_required = True
 
+    default_limit = 100
+
+    max_limit = 1000
+
     optional = ('distributor', 'brand', 'retail_shop', 'stocks', 'similar_products', 'available_stocks',
                 'last_purchase_amount', 'last_selling_amount', 'stock_required')
 
