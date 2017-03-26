@@ -1,6 +1,6 @@
-from marshmallow import pre_load
 from src import ma, BaseSchema
-from .models import Brand, Distributor, DistributorBill, Product, Tag, Stock, ProductTax, Tax, Combo, AddOn, Salt
+from .models import Brand, Distributor, DistributorBill, Product, Tag, Stock, ProductTax, Tax, \
+    Combo, AddOn, Salt, ProductSalt, ProductDistributor, ProductTag
 
 
 class BrandSchema(BaseSchema):
@@ -18,6 +18,7 @@ class TagSchema(BaseSchema):
         model = Tag
         exclude = ('created_on', 'updated_on')
 
+    id = ma.UUID()
     name = ma.String()
     retail_shop_id = ma.UUID()
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
@@ -49,6 +50,7 @@ class DistributorSchema(BaseSchema):
         model = Distributor
         exclude = ('created_on', 'updated_on')
 
+    id = ma.UUID()
     name = ma.String()
     phone_numbers = ma.List(ma.Integer())
     emails = ma.List(ma.Email())
@@ -80,7 +82,6 @@ class ProductSchema(BaseSchema):
     name = ma.String()
     description = ma.List(ma.Dict(), allow_none=True)
     sub_description = ma.String(allow_none=True)
-    distributor_id = ma.UUID()
     brand_id = ma.UUID()
     retail_shop_id = ma.UUID()
     default_quantity = ma.Float(precision=2, partila=True)
@@ -94,15 +95,15 @@ class ProductSchema(BaseSchema):
     last_purchase_amount = ma.Float(precision=2, dump_only=True)
     stock_required = ma.Integer(dump_only=True)
     is_short = ma.Boolean(dump_only=True)
-    distributor = ma.Nested('DistributorSchema', many=False, dump_only=True, only=('id', 'name'))
+    distributors = ma.Nested('DistributorSchema', many=True, dump_only=True, only=('id', 'name'))
     brand = ma.Nested('BrandSchema', many=False, dump_only=True, only=('id', 'name'))
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
-    tags = ma.Nested('TagSchema', many=True, only=('id', 'name'))
-    salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'))
+    tags = ma.Nested('TagSchema', many=True, only=('id', 'name'), dump_only=True)
+    salts = ma.Nested('SaltSchema', many=True, only=('id', 'name'), dump_only=True)
 
     _links = ma.Hyperlinks(
         {
-            'distributor': ma.URLFor('pos.distributor_view', slug='<distributor_id>'),
+            'distributor': ma.URLFor('pos.distributor_view', __product_id__exact='<id>'),
             'retail_shop': ma.URLFor('pos.retail_shop_view', slug='<retail_shop_id>'),
             'brand': ma.URLFor('pos.brand_view', slug='<brand_id>'),
             'stocks': ma.URLFor('pos.stock_view', __product_id__exact='<id>')
@@ -160,3 +161,29 @@ class AddOnSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
     retail_shop_id = ma.UUID()
 
+
+class ProductSaltSchema(BaseSchema):
+
+    class Meta:
+        model = ProductSalt
+
+    salt_id = ma.UUID(load=True)
+    product_id = ma.UUID(load=True)
+
+
+class ProductDistributorSchema(BaseSchema):
+
+    class Meta:
+        model = ProductDistributor
+
+    distributor_id = ma.UUID(load=True)
+    product_id = ma.UUID(load=True)
+
+
+class ProductTagSchema(BaseSchema):
+
+    class Meta:
+        model = ProductTag
+
+    tag_id = ma.UUID(load=True)
+    product_id = ma.UUID(load=True)

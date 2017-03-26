@@ -9,11 +9,12 @@ from flask_security import auth_token_required, roles_accepted, roles_required
 
 from .models import db
 from .blue_prints import bp
-from .resource import ModelResource
+from .resource import ModelResource, AssociationModelResource
 from .exceptions import ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException
 from .methods import BulkUpdate, List, Fetch, Create, Delete, Update
 
 ModelResourceType = TypeVar('ModelResourceType', bound=ModelResource)
+AssociationModelResource = TypeVar('AssociationModelResource', bound=AssociationModelResource)
 
 
 def to_underscore(name):
@@ -151,7 +152,7 @@ class AssociationView(Resource):
             self.add_method_decorator()
 
     @abstractproperty
-    def get_resource(self) -> ModelResourceType:
+    def get_resource(self) -> AssociationModelResource:
         pass
 
     def add_method_decorator(self):
@@ -162,7 +163,6 @@ class AssociationView(Resource):
             self.method_decorators.append(auth_token_required)
 
     def post(self):
-
         data = request.json if isinstance(request.json, list) else [request.json]
         for d in data:
             try:

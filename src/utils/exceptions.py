@@ -86,3 +86,8 @@ class CustomException(Exception):
 class ResourceNotFound(CustomException):
 
     status = 404
+
+
+class RequestNotAllowed(CustomException):
+
+    status = 401

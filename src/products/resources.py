@@ -2,9 +2,10 @@ from flask_security import current_user
 from sqlalchemy.sql import false
 from src.utils import ModelResource, AssociationModelResource, operators as ops
 from .schemas import ProductSchema, TaxSchema, StockSchema, BrandSchema, \
-    DistributorBillSchema, DistributorSchema, ProductTaxSchema, TagSchema, ComboSchema, SaltSchema, AddOnSchema
+    DistributorBillSchema, DistributorSchema, ProductTaxSchema, TagSchema, ComboSchema, SaltSchema, AddOnSchema, \
+    ProductDistributorSchema, ProductSaltSchema, ProductTagSchema
 from .models import Product, Tax, Stock, Brand, \
-    DistributorBill, Distributor, ProductTax, Tag, Combo, AddOn, Salt
+    DistributorBill, Distributor, ProductTax, Tag, Combo, AddOn, Salt, ProductDistributor, ProductSalt, ProductTag
 
 
 class ProductResource(ModelResource):
@@ -18,7 +19,7 @@ class ProductResource(ModelResource):
 
     max_limit = 1000
 
-    optional = ('distributor', 'brand', 'retail_shop', 'stocks', 'similar_products', 'available_stocks',
+    optional = ('distributors', 'brand', 'retail_shop', 'stocks', 'similar_products', 'available_stocks',
                 'last_purchase_amount', 'last_selling_amount', 'stock_required')
 
     filters = {
@@ -28,7 +29,7 @@ class ProductResource(ModelResource):
         'distributor_name': [ops.Equal, ops.Contains],
         'stock_required': [ops.Equal, ops.Greater, ops.Greaterequal],
         'available_stock': [ops.Equal, ops.Greater, ops.Greaterequal],
-        'distributor_id': [ops.Equal, ops.In],
+        # 'distributor_id': [ops.Equal, ops.In],
         'retail_shop_id': [ops.Equal, ops.In],
         'is_short': [ops.Boolean],
         'is_disabled': [ops.Boolean],
@@ -85,33 +86,6 @@ class TagResource(ModelResource):
 
     def has_add_permission(self, objects):
         if not current_user.has_permission('create_tag'):
-            return False
-        for obj in objects:
-            if not current_user.has_shop_access(obj.retail_shop_id):
-                return False
-        return True
-
-
-class ProductTaxResource(AssociationModelResource):
-
-    model = ProductTax
-    schema = ProductTaxSchema
-
-    auth_required = True
-
-    def has_read_permission(self, qs):
-        if current_user.has_permission('view_product_tax'):
-            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
-        return qs.filter(false())
-
-    def has_change_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('change_product_tax')
-
-    def has_delete_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_product_tax')
-
-    def has_add_permission(self, objects):
-        if not current_user.has_permission('create_product_tax'):
             return False
         for obj in objects:
             if not current_user.has_shop_access(obj.retail_shop_id):
@@ -414,5 +388,125 @@ class ComboResource(ModelResource):
         for obj in objects:
             if not current_user.has_shop_access(obj.retail_shop_id):
                 return False
+        return True
+
+
+class ProductDistributorResource(AssociationModelResource):
+
+    model = ProductDistributor
+
+    schema = ProductDistributorSchema
+
+    auth_required = True
+
+    roles_accepted = ('admin', 'owner')
+
+    def has_read_permission(self, qs):
+        if current_user.has_permission('view_product_distributor'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
+        return qs.filter(false())
+
+    def has_change_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('change_product_distributor')
+
+    def has_delete_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('remove_product_distributor')
+
+    def has_add_permission(self, obj):
+        if not current_user.has_permission('create_product_distributor') or\
+                not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
+                                                        .filter(Product.id == obj.product_id).scalar()):
+            return False
+        return True
+
+
+class ProductTagResource(AssociationModelResource):
+
+    model = ProductTag
+
+    schema = ProductTagSchema
+
+    auth_required = True
+
+    roles_accepted = ('admin',)
+
+    def has_read_permission(self, qs):
+        if current_user.has_permission('view_product_tag'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
+        return qs.filter(false())
+
+    def has_change_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('change_product_tag')
+
+    def has_delete_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('remove_product_tag')
+
+    def has_add_permission(self, obj):
+
+        if not current_user.has_permission('create_product_tag') or\
+                not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
+                                                        .filter(Product.id == obj.product_id).scalar()):
+            return False
+        return True
+
+
+class ProductSaltResource(AssociationModelResource):
+
+    model = ProductSalt
+
+    schema = ProductSaltSchema
+
+    auth_required = True
+
+    roles_accepted = ('admin',)
+
+    def has_read_permission(self, qs):
+        if current_user.has_permission('view_product_salt'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
+        return qs.filter(false())
+
+    def has_change_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('change_product_salt')
+
+    def has_delete_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('remove_product_salt')
+
+    def has_add_permission(self, obj):
+        if not current_user.has_permission('create_product_salt') or\
+                not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
+                                                        .filter(Product.id == obj.product_id).scalar()):
+            return False
+        return True
+
+
+class ProductTaxResource(AssociationModelResource):
+
+    model = ProductTax
+    schema = ProductTaxSchema
+
+    auth_required = True
+
+    def has_read_permission(self, qs):
+        if current_user.has_permission('view_product_tax'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
+        return qs.filter(false())
+
+    def has_change_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('change_product_tax')
+
+    def has_delete_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_product_tax')
+
+    def has_add_permission(self, obj):
+        if not current_user.has_permission('create_product_tax') or\
+                not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
+                                                        .filter(Product.id == obj.product_id).scalar()):
+            return False
         return True
 

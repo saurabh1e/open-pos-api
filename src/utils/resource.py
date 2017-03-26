@@ -4,7 +4,7 @@ from typing import Type, List, Tuple
 from sqlalchemy.exc import OperationalError, IntegrityError
 from flask import request
 from .models import db
-from .exceptions import ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException
+from .exceptions import ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException, RequestNotAllowed
 
 
 class ModelResource(ABC):
@@ -220,7 +220,8 @@ class AssociationModelResource(ABC):
             except OperationalError:
                 raise SQLIntegrityError(data=data, message='Operational Error', operation='adding relation', status=400)
         else:
-            raise ResourceNotFound(data=data, message='Permission Denied', operation='adding relation', status=404)
+            raise RequestNotAllowed(data=data, message='Object not Found', operation='deleting relation',
+                                    status=401)
 
     def update_relation(self, data):
         obj = self.model.query.get(data['id'])
@@ -239,6 +240,9 @@ class AssociationModelResource(ABC):
                 db.session.rollback()
                 raise SQlOperationalError(data=data, message='Operational Error', operation='Adding Resource',
                                           status=400)
+            else:
+                raise RequestNotAllowed(data=data, message='Object not Found', operation='deleting relation',
+                                        status=401)
         else:
             raise ResourceNotFound(data=data, message='Object not Found', operation='Updating relation', status=404)
 
@@ -248,15 +252,20 @@ class AssociationModelResource(ABC):
             if hasattr(self.model, k):
                 obj = obj.filter(getattr(self.model, k) == v)
         obj = obj.first()
-        if obj and self.has_delete_permission(obj):
-            db.session.delete(obj)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                raise SQLIntegrityError(data=data, message='Integrity Error', operation='deleting relation', status=400)
-            except OperationalError:
-                raise SQLIntegrityError(data=data, message='Operational Error', operation='deleting relation',
-                                        status=400)
+        if obj:
+            if self.has_delete_permission(obj):
+                db.session.delete(obj)
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    raise SQLIntegrityError(data=data, message='Integrity Error', operation='deleting relation',
+                                            status=400)
+                except OperationalError:
+                    raise SQLIntegrityError(data=data, message='Operational Error', operation='deleting relation',
+                                            status=400)
+            else:
+                raise RequestNotAllowed(data=data, message='Object not Found', operation='deleting relation',
+                                        status=401)
         else:
             raise ResourceNotFound(data=data, message='Object not Found', operation='deleting relation', status=404)
 
