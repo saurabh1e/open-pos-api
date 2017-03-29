@@ -234,14 +234,6 @@ class Product(BaseMixin, db.Model, ReprMixin):
     def product_name(self):
         return self.name
 
-    @hybrid_property
-    def distributor_name(self):
-        return self.distributor.name
-
-    @distributor_name.expression
-    def distributor_name(self):
-        return select([Distributor.name]).where(Distributor.id == self.distributor_id).as_scalar()
-
 
 class Salt(BaseMixin, db.Model, ReprMixin):
 
