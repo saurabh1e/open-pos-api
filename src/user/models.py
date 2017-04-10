@@ -10,8 +10,8 @@ from src import db, BaseMixin, ReprMixin
 
 class UserRetailShop(BaseMixin, db.Model):
 
-    user_id = db.Column(UUID, db.ForeignKey('user.id', ondelete='CASCADE'), index=True)
-    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
+    user_id = db.Column(UUID, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=False)
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     user = db.relationship('User', foreign_keys=[user_id])
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id])
@@ -75,6 +75,7 @@ class RetailShop(BaseMixin, db.Model, ReprMixin):
 
     retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True)
     address_id = db.Column(UUID, db.ForeignKey('address.id'), unique=True, index=True)
+    invoice_number = db.Column(db.Integer, default=0, nullable=False)
 
     retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id], back_populates='retail_shops')
     users = db.relationship('User', back_populates='retail_shops', secondary='user_retail_shop', lazy='dynamic')
@@ -83,6 +84,7 @@ class RetailShop(BaseMixin, db.Model, ReprMixin):
     address = db.relationship('Address', foreign_keys=[address_id], uselist=False)
     localities = db.relationship('Locality', secondary='retail_shop_locality')
     registration_details = db.relationship('RegistrationDetail', uselist=True, lazy='dynamic')
+    printer_config = db.relationship('PrinterConfig', uselist=False)
 
     @hybrid_property
     def total_sales(self):
@@ -117,7 +119,9 @@ class UserPermission(BaseMixin, db.Model):
 class Role(BaseMixin, db.Model, RoleMixin, ReprMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
+    is_hidden = db.Column(db.Boolean(), default=False)
 
+    permissions = db.relationship('Permission', uselist=True, lazy='dynamic', back_populates='role')
     users = db.relationship('User', back_populates='roles', secondary='user_role')
 
 
@@ -136,7 +140,7 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     current_login_ip = db.Column(db.String(45))
     login_count = db.Column(db.Integer)
 
-    retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True)
+    retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True, nullable=False)
 
     retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id], back_populates='users')
     roles = db.relationship('Role', back_populates='users', secondary='user_role')
@@ -154,11 +158,8 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
 
     @hybrid_method
     def has_shop_access(self, shop_id):
-        return True
-
-    @hybrid_property
-    def brand_ids(self):
-        return set([i[0] for i in self.retail_shops.with_entities(RetailShop.retail_brand_id).all()])
+        return db.session.query(UserRetailShop.query.filter(UserRetailShop.retail_shop_id == shop_id,
+                                                            UserRetailShop.user_id == self.id).exists()).scalar()
 
     @hybrid_method
     def has_permission(self, permission):
@@ -174,6 +175,10 @@ class Permission(BaseMixin, db.Model, ReprMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
     type = db.Column(db.String(15), nullable=True)
+    is_hidden = db.Column(db.Boolean(), default=False)
+    role_id = db.Column(UUID, db.ForeignKey('role.id'), nullable=True)
+
+    role = db.relationship('Role', back_populates='permissions', uselist=False)
     users = db.relationship('User', back_populates='permissions', secondary='user_permission')
 
 
@@ -233,3 +238,22 @@ class Locality(BaseMixin, db.Model, ReprMixin):
 class City(BaseMixin, db.Model, ReprMixin):
 
     name = db.Column(db.Text, nullable=False, unique=True)
+
+
+class PrinterConfig(BaseMixin, db.Model, ReprMixin):
+
+    header = db.Column(db.Text, nullable=True)
+    footer = db.Column(db.Text, nullable=True)
+
+    bill_template = db.Column(db.Text, nullable=True)
+    receipt_template = db.Column(db.Text, nullable=True)
+
+    bill_printer_type = db.Column(db.Enum('thermal', 'dot_matrix', 'laser', name='varchar'))
+    receipt_printer_type = db.Column(db.Enum('thermal', 'dot_matrix', 'laser', name='varchar'))
+    label_printer_type = db.Column(db.Enum('1x1', '2x1', '3x1', '4x1', name='varchar'))
+
+    have_receipt_printer = db.Column(db.Boolean(), default=False)
+    have_bill_printer = db.Column(db.Boolean(), default=False)
+
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id'))
+

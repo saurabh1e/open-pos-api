@@ -2,7 +2,7 @@ from src import BaseView, AssociationView
 from src import api
 from .resources import BrandResource, DistributorBillResource, DistributorResource, ProductResource, \
     ProductTaxResource, StockResource, TaxResource, TagResource, ComboResource, AddOnResource, SaltResource,\
-    ProductDistributorResource, ProductTagResource, ProductSaltResource
+    ProductDistributorResource, ProductTagResource, ProductSaltResource, BrandDistributorResource
 
 
 @api.register()
@@ -115,3 +115,11 @@ class ProductSaltAssociationView(AssociationView):
     @classmethod
     def get_resource(cls):
         return ProductSaltResource
+
+
+@api.register()
+class BrandDistributorAssociationView(AssociationView):
+
+    @classmethod
+    def get_resource(cls):
+        return BrandDistributorResource

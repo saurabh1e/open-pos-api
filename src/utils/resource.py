@@ -84,6 +84,9 @@ class ModelResource(ABC):
                 for operator in self.filters.get(array_key[1]):
                     if operator.op == array_key[2]:
                         queryset = operator().prepare_queryset(queryset, self.model, array_key[1], v)
+
+        if '__distinct_by' in request.args:
+            queryset = queryset.distinct(getattr(self.model, request.args['__distinct_by']))
         return queryset
 
     def apply_ordering(self, queryset, order_by):
@@ -196,15 +199,93 @@ class AssociationModelResource(ABC):
 
     schema = None
 
-    associated_resources = {
+    filters = {}
 
-    }
+    max_limit: int = 100
+
+    default_limit: int = 50
+
+    exclude_related_resource: Tuple[str] = ()
+
+    order_by: List[str] = []
+
+    only: Tuple[str] = ()
+
+    exclude: Tuple[str] = ()
+
+    include: Tuple[str] = ()
+
+    optional: Tuple[str] = ()
+
+    page: int = 1
 
     auth_required = False
 
     roles_accepted: Tuple[str] = ()
 
     roles_required: Tuple[str] = ()
+
+    def __init__(self):
+
+        if request.args.getlist('__only'):
+            if len(request.args.getlist('__only')) == 1:
+                self.obj_only = tuple(request.args.getlist('__only')[0].split(','))
+            else:
+                self.obj_only = tuple(request.args.getlist('__only'))
+        else:
+            self.obj_only = self.only
+
+        self.obj_exclude = []
+        if request.args.getlist('__exclude'):
+            if len(request.args.getlist('__exclude')) == 1:
+                self.obj_exclude = request.args.getlist('__exclude')[0].split(',')
+            else:
+                self.obj_exclude = request.args.getlist('__exclude')
+
+        self.obj_exclude.extend(list(self.exclude))
+        self.obj_optional = list(self.optional)
+
+        if request.args.getlist('__include'):
+            if len(request.args.getlist('__include')) == 1:
+                optionals = request.args.getlist('__include')[0].split(',')
+            else:
+                optionals = request.args.getlist('__include')
+
+            for optional in optionals:
+                try:
+                    self.obj_optional.remove(optional)
+                except ValueError:
+                    pass
+
+        self.obj_exclude.extend(self.obj_optional)
+
+        self.page = int(request.args.get('__page')) if request.args.get('__page') else 1
+        self.limit = int(request.args.get('__limit')) if request.args.get('__limit') \
+                                                         and int(
+            request.args.get('__limit')) <= self.max_limit else self.default_limit
+
+    def apply_filters(self, queryset, **kwargs):
+        for k, v in kwargs.items():
+            array_key = k.split('__')
+            if array_key[0] == '' and array_key[1] in self.filters.keys():
+                for operator in self.filters.get(array_key[1]):
+                    if operator.op == array_key[2]:
+                        queryset = operator().prepare_queryset(queryset, self.model, array_key[1], v)
+
+        return queryset
+
+    def apply_ordering(self, queryset, order_by):
+        desc = False
+        if order_by.startswith('-'):
+            desc = True
+            order_by = order_by.replace('-', '')
+        if order_by in self.order_by:
+            if desc:
+                queryset = queryset.order_by(getattr(self.model, order_by).desc())
+            else:
+                queryset = queryset.order_by(getattr(self.model, order_by))
+
+        return queryset
 
     def add_relation(self, data):
         obj, errors = self.schema().load(data, session=db.session)
@@ -220,7 +301,7 @@ class AssociationModelResource(ABC):
             except OperationalError:
                 raise SQLIntegrityError(data=data, message='Operational Error', operation='adding relation', status=400)
         else:
-            raise RequestNotAllowed(data=data, message='Object not Found', operation='deleting relation',
+            raise RequestNotAllowed(data=data, message='Object not Found', operation='adding relation',
                                     status=401)
 
     def update_relation(self, data):

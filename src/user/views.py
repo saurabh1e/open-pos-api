@@ -2,9 +2,11 @@ from flask_restful import Resource
 from flask_security.utils import verify_and_update_password, login_user
 from flask import request, jsonify, make_response, redirect
 from src import BaseView, AssociationView
+from src.utils.methods import List
 from .resources import UserResource, UserRoleResource, RoleResource,\
     RetailBrandResource, RetailShopResource, UserRetailShopResource, CustomerResource, AddressResource,\
-    LocalityResource, CityResource, CustomerAddressResource, CustomerTransactionResource
+    LocalityResource, CityResource, CustomerAddressResource, CustomerTransactionResource, \
+    UserPermissionResource, PermissionResource
 from src import api
 from .models import User
 
@@ -20,9 +22,21 @@ class UserView(BaseView):
 @api.register()
 class RoleView(BaseView):
 
+    api_methods = [List]
+
     @classmethod
     def get_resource(cls):
         return RoleResource
+
+
+@api.register()
+class PermissionView(BaseView):
+
+    api_methods = [List]
+
+    @classmethod
+    def get_resource(cls):
+        return PermissionResource
 
 
 @api.register()
@@ -31,6 +45,14 @@ class UserRoleAssociationView(AssociationView):
     @classmethod
     def get_resource(cls):
         return UserRoleResource
+
+
+@api.register()
+class UserPermissionAssociationView(AssociationView):
+
+    @classmethod
+    def get_resource(cls):
+        return UserPermissionResource
 
 
 @api.register()

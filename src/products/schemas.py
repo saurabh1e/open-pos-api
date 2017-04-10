@@ -1,6 +1,6 @@
 from src import ma, BaseSchema
 from .models import Brand, Distributor, DistributorBill, Product, Tag, Stock, ProductTax, Tax, \
-    Combo, AddOn, Salt, ProductSalt, ProductDistributor, ProductTag
+    Combo, AddOn, Salt, ProductSalt, ProductDistributor, ProductTag, BrandDistributor
 
 
 class BrandSchema(BaseSchema):
@@ -55,6 +55,9 @@ class DistributorSchema(BaseSchema):
     phone_numbers = ma.List(ma.Integer())
     emails = ma.List(ma.Email())
     retail_shop_id = ma.UUID()
+    products = ma.Nested('ProductSchema', many=True, dump_only=True, only=('id', 'name', 'last_selling_amount',
+                                                                           'barcode', 'last_purchase_amount',
+                                                                           'stock_required', 'quantity_label'))
 
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
     bills = ma.Nested('DistributorBillSchema', many=True, exclude=('distributor', 'distributor_id'))
@@ -89,6 +92,7 @@ class ProductSchema(BaseSchema):
     is_loose = ma.Boolean(load=True, allow_none=True)
     mrp = ma.Integer(dump_only=True)
     available_stock = ma.Integer(dump_only=True)
+    barcode = ma.String(max_length=13, min_length=8, load=True, allow_none=False)
     similar_products = ma.List(ma.Integer, dump_only=True)
 
     last_selling_amount = ma.Float(precision=2, dump_only=True)
@@ -112,7 +116,7 @@ class ProductSchema(BaseSchema):
 
     stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                        'units_sold', 'expiry_date', 'purchase_date', 'id'))
-    taxes = ma.Nested('TaxSchema', many=True, only=('id', 'name', 'value'))
+    taxes = ma.Nested('TaxSchema', many=True, dump_only=True, only=('id', 'name', 'value'))
     available_stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                                  'units_sold', 'expiry_date', 'purchase_date', 'id'))
 
@@ -166,6 +170,7 @@ class ProductSaltSchema(BaseSchema):
 
     class Meta:
         model = ProductSalt
+        exclude = ('created_on', 'updated_on')
 
     salt_id = ma.UUID(load=True)
     product_id = ma.UUID(load=True)
@@ -184,6 +189,17 @@ class ProductTagSchema(BaseSchema):
 
     class Meta:
         model = ProductTag
+        exclude = ('created_on', 'updated_on')
 
     tag_id = ma.UUID(load=True)
     product_id = ma.UUID(load=True)
+
+
+class BrandDistributorSchema(BaseSchema):
+
+    class Meta:
+        model = BrandDistributor
+        exclude = ('created_on', 'updated_on')
+
+    brand_id = ma.UUID(load=True)
+    distributor_id = ma.UUID(load=True)

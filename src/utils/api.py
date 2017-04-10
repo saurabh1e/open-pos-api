@@ -74,9 +74,9 @@ class BaseView(Resource):
 
     def get(self, slug=None):
         if slug:
-            obj = self.resource.model.query.get(slug)
+            obj = self.resource.model.query.filter(self.resource.model.id == slug)
+            obj = self.resource.has_read_permission(obj).first()
             if obj:
-                obj = self.resource.has_read_permission(obj)
                 return make_response(jsonify(self.resource.schema(exclude=tuple(self.resource.obj_exclude),
                                                                   only=tuple(self.resource.obj_only)).dump(
                     obj, many=False).data), 200)
@@ -144,7 +144,7 @@ class BaseView(Resource):
 
 class AssociationView(Resource):
 
-    api_methods = [Create]
+    api_methods = [Create, List, Fetch]
 
     def __init__(self):
         if self.get_resource is not None:
@@ -161,6 +161,31 @@ class AssociationView(Resource):
             self.method_decorators.append(roles_required(*[i for i in self.resource.roles_required]))
             self.method_decorators.append(roles_accepted(*[i for i in self.resource.roles_accepted]))
             self.method_decorators.append(auth_token_required)
+
+    def get(self, slug=None):
+        if slug:
+            obj = self.resource.model.query.filter(self.resource.model.id == slug)
+            obj = self.resource.has_read_permission(obj).first()
+            if obj:
+                return make_response(jsonify(self.resource.schema(exclude=tuple(self.resource.obj_exclude),
+                                                                  only=tuple(self.resource.obj_only)).dump(
+                    obj, many=False).data), 200)
+
+            return make_response(jsonify({'error': True, 'message': 'Resource not found'}), 404)
+
+        else:
+            objects = self.resource.apply_filters(queryset=self.resource.model.query, **request.args)
+            objects = self.resource.has_read_permission(objects)
+
+            if '__order_by' in request.args:
+                objects = self.resource.apply_ordering(objects, request.args['__order_by'])
+            resources = objects.paginate(page=self.resource.page, per_page=self.resource.limit)
+            if resources.items:
+                return make_response(jsonify({'success': True,
+                                              'data': self.resource.schema(exclude=tuple(self.resource.obj_exclude),
+                                                                           only=tuple(self.resource.obj_only))
+                                             .dump(resources.items, many=True).data, 'total': resources.total}), 200)
+            return make_response(jsonify({'error': True, 'message': 'No Resource Found'}), 404)
 
     def post(self):
         data = request.json if isinstance(request.json, list) else [request.json]

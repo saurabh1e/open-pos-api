@@ -2,7 +2,7 @@ from flask_admin_impexp.admin_impexp import AdminImportExport
 from flask_security import current_user
 from src import admin, db
 from src.user.models import User, Role, Permission, UserRole, RetailBrand, RetailShop, UserRetailShop, \
-    Address, Locality, City, Customer, RegistrationDetail, CustomerAddress, CustomerTransaction
+    Address, Locality, City, Customer, RegistrationDetail, CustomerAddress, CustomerTransaction, PrinterConfig
 from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
     DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt
@@ -43,10 +43,12 @@ admin.add_view(MyModel(CustomerTransaction, session=db.session))
 admin.add_view(MyModel(Role, session=db.session))
 admin.add_view(MyModel(UserRole, session=db.session))
 admin.add_view(MyModel(Permission, session=db.session))
+
 admin.add_view(RetailShopAdmin(RetailShop, session=db.session))
 admin.add_view(MyModel(RetailBrand, session=db.session))
 admin.add_view(MyModel(UserRetailShop, session=db.session))
 admin.add_view(MyModel(RegistrationDetail, session=db.session))
+admin.add_view(MyModel(PrinterConfig, session=db.session))
 admin.add_view(MyModel(Address, session=db.session))
 admin.add_view(MyModel(CustomerAddress, session=db.session))
 admin.add_view(MyModel(Locality, session=db.session))

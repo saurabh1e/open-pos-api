@@ -15,6 +15,7 @@ class Brand(BaseMixin, db.Model, ReprMixin):
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='brands')
     products = db.relationship('Product', uselist=True, back_populates='brand')
+    distributors = db.relationship('Distributor', back_populates='brands', secondary='brand_distributor')
 
 
 class ProductTax(BaseMixin, db.Model, ReprMixin):
@@ -62,6 +63,7 @@ class Distributor(BaseMixin, db.Model, ReprMixin):
     products = db.relationship('Product', uselist=True, back_populates='distributors', lazy='dynamic',
                                secondary='product_distributor')
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='distributors')
+    brands = db.relationship('Brand', back_populates='distributors', secondary='brand_distributor')
 
     UniqueConstraint(name, retail_shop_id)
 
@@ -132,6 +134,27 @@ class ProductTag(BaseMixin, db.Model, ReprMixin):
         return select([Product.retail_shop_id]).where(Product.id == self.product_id).as_scalar()
 
 
+class BrandDistributor(BaseMixin, db.Model, ReprMixin):
+
+    __repr_fields__ = ['brand_id', 'distributor_id']
+
+    brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True)
+    distributor_id = db.Column(UUID, db.ForeignKey('distributor.id'), index=True)
+
+    brand = db.relationship('Brand', foreign_keys=[brand_id])
+    distributor = db.relationship('Distributor', foreign_keys=[distributor_id])
+
+    UniqueConstraint(brand_id, distributor_id)
+
+    @hybrid_property
+    def retail_shop_id(self):
+        return self.brand.retail_shop_id
+
+    @retail_shop_id.expression
+    def retail_shop_id(self):
+        return select([Brand.retail_shop_id]).where(Brand.id == self.brand_id).as_scalar()
+
+
 class ProductDistributor(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['distributor_id', 'product_id']
@@ -165,6 +188,7 @@ class Product(BaseMixin, db.Model, ReprMixin):
     quantity_label = db.Column(db.Enum('KG', 'GM', 'MG', 'L', 'ML', 'TAB', 'SYRUP', 'OTH', name='varchar'),
                                default='OTH', nullable=True)
     is_loose = db.Column(db.Boolean(), default=False)
+    barcode = db.Column(db.String(13), nullable=True)
 
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
     brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True)
@@ -180,15 +204,17 @@ class Product(BaseMixin, db.Model, ReprMixin):
     salts = db.relationship('Salt', back_populates='products', secondary='product_salt')
     add_ons = db.relationship('AddOn', back_populates='products', secondary='product_add_on')
 
+    UniqueConstraint('barcode', 'retail_shop_id', 'bar_retail_un')
+
     @hybrid_property
     def available_stock(self):
-        return self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None))\
+        return self.stocks.filter(and_(or_(Stock.is_sold == False, Stock.is_sold == None)), Stock.expired == False)\
             .with_entities(func.coalesce(func.Sum(Stock.units_purchased), 0)-func.coalesce(func.Sum(Stock.units_sold),
                                                                                            0)).scalar()
 
     @hybrid_property
     def available_stocks(self):
-        return self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None, Stock.expired == False)).all()
+        return self.stocks.filter(and_(or_(Stock.is_sold == False, Stock.is_sold == None), Stock.expired == False)).all()
 
     @available_stock.expression
     def available_stock(cls):
@@ -320,11 +346,14 @@ class Stock(BaseMixin, db.Model, ReprMixin):
 
     @hybrid_property
     def expired(self):
-        return not self.is_sold and not self.expiry_date >= datetime.now().date()
+        return self.expiry_date is not None and self.expiry_date < datetime.now().date()
 
     @expired.expression
     def expired(self):
-        return and_(self.is_sold != True, self.expiry_date <= datetime.now().date()).label('expired')
+        return and_(or_(self.is_sold == False, self.is_sold == None),
+                    or_(self.expiry_date != None,
+                        func.coalesce(self.expiry_date, datetime.now().date()) < datetime.now().date()))\
+            .label('expired')
 
     @hybrid_property
     def distributor_id(self):

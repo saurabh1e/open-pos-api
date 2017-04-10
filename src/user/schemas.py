@@ -1,6 +1,7 @@
 from src import ma, BaseSchema
 from .models import User, Role, Permission, UserRole, RetailShop, RetailBrand, UserRetailShop, \
-    Customer, Address, Locality, City, RegistrationDetail, CustomerAddress, CustomerTransaction
+    Customer, Address, Locality, City, RegistrationDetail, CustomerAddress, CustomerTransaction, \
+    UserPermission, PrinterConfig
 
 
 class UserSchema(BaseSchema):
@@ -18,16 +19,19 @@ class UserSchema(BaseSchema):
     retail_shops = ma.Nested('RetailShopSchema', many=True)
 
     _links = ma.Hyperlinks({'shops': ma.URLFor('pos.retail_shop_view', __id__in='<retail_shop_ids>')})
-    roles = ma.Nested('RoleSchema', many=True, dump_only=True)
+    roles = ma.Nested('RoleSchema', many=True, dump_only=True, only=('id', 'name'))
+    permissions = ma.Nested('PermissionSchema', many=True, dump_only=True, only=('id', 'name'))
 
 
 class RoleSchema(BaseSchema):
 
     class Meta:
         model = Role
-        fields = ('name',)
+        exclude = ('updated_on', 'created_on', 'users')
 
+    id = ma.UUID()
     name = ma.String()
+    permissions = ma.Nested('PermissionSchema', many=True, dump_only=True)
 
 
 class UserRoleSchema(BaseSchema):
@@ -48,6 +52,8 @@ class PermissionSchema(BaseSchema):
     class Meta:
         model = Permission
         exclude = ('users', 'created_on', 'updated_on')
+
+    role = ma.Nested('RoleSchema', dump_only=True, many=False)
 
 
 class RetailShopSchema(BaseSchema):
@@ -71,6 +77,7 @@ class RetailShopSchema(BaseSchema):
     address = ma.Nested('AddressSchema', many=False)
     localities = ma.Nested('LocalitySchema', many=True)
     registration_details = ma.Nested('RegistrationDetailSchema', many=True)
+    printer_config = ma.Nested('PrinterConfigSchema', load=True, many=False)
 
 
 class RetailBrandSchema(BaseSchema):
@@ -148,3 +155,24 @@ class CustomerTransactionSchema(BaseSchema):
 
     amount = ma.Float(precision=2, load=True)
     customer_id = ma.UUID(load=True, partial=False, allow_none=False)
+
+
+class UserPermissionSchema(BaseSchema):
+    class Meta:
+        model = UserPermission
+        exclude = ('created_on', 'updated_on')
+
+    id = ma.UUID(load=True)
+    user_id = ma.UUID(load=True)
+    permission_id = ma.UUID(load=True)
+    user = ma.Nested('UserSchema', many=False)
+    permission = ma.Nested('PermissionSchema', many=False)
+
+
+class PrinterConfigSchema(BaseSchema):
+
+    class Meta:
+        model = PrinterConfig
+        exclude = ('created_on', 'updated_on')
+
+    retail_shop_id = ma.UUID(load=True)
