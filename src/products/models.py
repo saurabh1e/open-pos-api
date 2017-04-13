@@ -208,22 +208,22 @@ class Product(BaseMixin, db.Model, ReprMixin):
 
     @hybrid_property
     def available_stock(self):
-        return self.stocks.filter(and_(or_(Stock.is_sold == False, Stock.is_sold == None)), Stock.expired == False)\
+        return self.stocks.filter(Stock.is_sold != True, Stock.expired == False)\
             .with_entities(func.coalesce(func.Sum(Stock.units_purchased), 0)-func.coalesce(func.Sum(Stock.units_sold),
                                                                                            0)).scalar()
 
     @hybrid_property
     def available_stocks(self):
-        return self.stocks.filter(and_(or_(Stock.is_sold == False, Stock.is_sold == None), Stock.expired == False)).all()
+        return self.stocks.filter(and_(or_(Stock.is_sold != True), Stock.expired == False)).all()
 
     @available_stock.expression
     def available_stock(cls):
         return select([func.coalesce(func.Sum(Stock.units_purchased), 0)-func.coalesce(func.Sum(Stock.units_sold), 0)])\
-            .where(and_(or_(Stock.is_sold == False, Stock.is_sold == None), Stock.product_id == cls.id)).as_scalar()
+            .where(and_(or_(Stock.is_sold != True), Stock.product_id == cls.id)).as_scalar()
 
     @hybrid_property
     def mrp(self):
-        mrp = self.stocks.filter(or_(Stock.is_sold == False, Stock.is_sold == None))\
+        mrp = self.stocks.filter(or_(Stock.is_sold != True))\
             .with_entities(Stock.selling_amount).order_by(Stock.id).first()
         return mrp[0] if mrp else 0
 
@@ -350,10 +350,8 @@ class Stock(BaseMixin, db.Model, ReprMixin):
 
     @expired.expression
     def expired(self):
-        return and_(or_(self.is_sold == False, self.is_sold == None),
-                    or_(self.expiry_date != None,
-                        func.coalesce(self.expiry_date, datetime.now().date()) < datetime.now().date()))\
-            .label('expired')
+        return and_(or_(self.is_sold != True), func.coalesce(self.expiry_date, datetime.now().date())
+                    < datetime.now().date()).label('expired')
 
     @hybrid_property
     def distributor_id(self):
