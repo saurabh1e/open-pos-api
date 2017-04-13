@@ -60,12 +60,18 @@ class Distributor(BaseMixin, db.Model, ReprMixin):
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     bills = db.relationship('DistributorBill', uselist=True, back_populates='distributor', lazy='dynamic')
-    products = db.relationship('Product', uselist=True, back_populates='distributors', lazy='dynamic',
-                               secondary='product_distributor')
+    # products = db.relationship('Product', uselist=True, back_populates='distributors', lazy='dynamic',
+    #                            secondary='product_distributor')
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='distributors')
     brands = db.relationship('Brand', back_populates='distributors', secondary='brand_distributor')
 
     UniqueConstraint(name, retail_shop_id)
+
+    @hybrid_property
+    def products(self):
+        return Product.query.filter(Product.brand_id.in_
+                                    ([i[0] for i in BrandDistributor.query.with_entities(BrandDistributor.brand_id)
+                                     .filter(BrandDistributor.distributor_id == self.id).all()])).all()
 
 
 class DistributorBill(BaseMixin, db.Model, ReprMixin):
@@ -199,7 +205,7 @@ class Product(BaseMixin, db.Model, ReprMixin):
     brand = db.relationship('Brand', foreign_keys=[brand_id], uselist=False, back_populates='products')
 
     stocks = db.relationship('Stock', uselist=True, cascade="all, delete-orphan", lazy='dynamic')
-    distributors = db.relationship('Distributor', back_populates='products', secondary='product_distributor')
+    # distributors = db.relationship('Distributor', back_populates='products', secondary='product_distributor')
     combos = db.relationship('Combo', back_populates='products', secondary='combo_product')
     salts = db.relationship('Salt', back_populates='products', secondary='product_salt')
     add_ons = db.relationship('AddOn', back_populates='products', secondary='product_add_on')
