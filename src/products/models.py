@@ -10,7 +10,7 @@ from src.orders.models import Item
 
 class Brand(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String(55), nullable=False)
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='brands')

@@ -176,3 +176,4 @@ class PrinterConfigSchema(BaseSchema):
         exclude = ('created_on', 'updated_on')
 
     retail_shop_id = ma.UUID(load=True)
+    have_bill_printer = ma.Boolean(load=True)

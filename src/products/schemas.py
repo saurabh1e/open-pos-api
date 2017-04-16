@@ -135,8 +135,8 @@ class StockSchema(BaseSchema):
     product_name = ma.String()
     product_id = ma.UUID(load=True)
     distributor_bill_id = ma.UUID(allow_none=True)
-    units_sold = ma.Integer(dump_ony=True)
-    expired = ma.Boolean()
+    units_sold = ma.Integer(dump_only=True, load=False)
+    expired = ma.Boolean(dump_only=True)
     quantity_label = ma.String(dump_only=True)
 
     distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor',

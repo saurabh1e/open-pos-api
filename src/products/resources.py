@@ -115,7 +115,7 @@ class StockResource(ModelResource):
         'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual]
     }
 
-    order_by = ['expiry_date', 'units_sold']
+    order_by = ['expiry_date', 'units_sold', 'created_on']
 
     only = ()
 
