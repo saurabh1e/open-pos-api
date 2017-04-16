@@ -15,7 +15,8 @@ class Brand(BaseMixin, db.Model, ReprMixin):
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='brands')
     products = db.relationship('Product', uselist=True, back_populates='brand')
-    distributors = db.relationship('Distributor', back_populates='brands', secondary='brand_distributor')
+    distributors = db.relationship('Distributor', back_populates='brands', secondary='brand_distributor',
+                                   lazy='dynamic')
 
 
 class ProductTax(BaseMixin, db.Model, ReprMixin):
@@ -265,6 +266,10 @@ class Product(BaseMixin, db.Model, ReprMixin):
     @hybrid_property
     def product_name(self):
         return self.name
+
+    @hybrid_property
+    def distributors(self):
+        return self.brand.distributors.all()
 
 
 class Salt(BaseMixin, db.Model, ReprMixin):
