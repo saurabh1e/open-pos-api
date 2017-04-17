@@ -3,9 +3,10 @@ from sqlalchemy import or_, false
 from src.utils import ModelResource, operators as ops, AssociationModelResource
 from .schemas import User, UserSchema, Role, RoleSchema, UserRole, UserRoleSchema,\
     RetailBrandSchema, RetailShopSchema, UserRetailShopSchema, CustomerSchema, AddressSchema, CitySchema,\
-    LocalitySchema, CustomerAddressSchema, CustomerTransactionSchema, PermissionSchema, UserPermissionSchema
+    LocalitySchema, CustomerAddressSchema, CustomerTransactionSchema, PermissionSchema, UserPermissionSchema,\
+    PrinterConfigSchema, RegistrationDetailSchema
 from .models import RetailShop, RetailBrand, UserRetailShop, Customer, Locality, City, Address, CustomerAddress,\
-    CustomerTransaction, Permission, UserPermission
+    CustomerTransaction, Permission, UserPermission, PrinterConfig, RegistrationDetail
 
 
 class UserResource(ModelResource):
@@ -66,19 +67,29 @@ class RetailShopResource(ModelResource):
     }
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
-        return qs
+        if current_user.has_permission('view_shop'):
+            return qs.filter(self.model.retail_brand_id == current_user.retail_brand_id)
 
     def has_change_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('change_shop'):
+
+            return True
+        return False
 
     def has_delete_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('delete_shop'):
+
+            return True
+        return False
 
     def has_add_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('add_shop'):
+
+            return True
+        return False
 
 
 class RetailBrandResource(ModelResource):
@@ -86,19 +97,26 @@ class RetailBrandResource(ModelResource):
     schema = RetailBrandSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
-        return qs
+        if current_user.has_permission('view_shop'):
+            return qs.filter(self.model.retail_brand_id == current_user.retail_brand_id)
 
     def has_change_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('change_shop'):
+            return True
+        return False
 
     def has_delete_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('delete_shop'):
+            return True
+        return False
 
     def has_add_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('add_shop'):
+            return True
+        return False
 
 
 class UserRetailShopResource(AssociationModelResource):
@@ -107,7 +125,7 @@ class UserRetailShopResource(AssociationModelResource):
     schema = UserRetailShopSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs
@@ -138,19 +156,26 @@ class CustomerResource(ModelResource):
     }
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
-        return qs
+        if current_user.has_permission('view_customer'):
+            return qs.filter(self.model.retail_brand_id == current_user.retail_brand_id)
 
     def has_change_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('change_customer'):
+            return True
+        return False
 
     def has_delete_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('delete_customer'):
+            return True
+        return False
 
     def has_add_permission(self, obj):
-        return True
+        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('add_customer'):
+            return True
+        return False
 
 
 class AddressResource(ModelResource):
@@ -158,7 +183,7 @@ class AddressResource(ModelResource):
     schema = AddressSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs
@@ -178,7 +203,7 @@ class LocalityResource(ModelResource):
     schema = LocalitySchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs
@@ -198,7 +223,7 @@ class CityResource(ModelResource):
     schema = CitySchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs
@@ -219,7 +244,7 @@ class CustomerAddressResource(AssociationModelResource):
     schema = CustomerAddressSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs
@@ -240,7 +265,7 @@ class CustomerTransactionResource(ModelResource):
     schema = CustomerTransactionSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs
@@ -261,7 +286,7 @@ class PermissionResource(ModelResource):
     schema = PermissionSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs.filter(or_(self.model.is_hidden == False, self.model.is_hidden == None))
@@ -282,7 +307,7 @@ class UserPermissionResource(AssociationModelResource):
     schema = UserPermissionSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs.filter(false())
@@ -305,7 +330,7 @@ class RoleResource(ModelResource):
     schema = RoleSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
 
@@ -327,7 +352,7 @@ class UserRoleResource(AssociationModelResource):
     schema = UserRoleSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
         return qs.filter(false())
@@ -343,4 +368,53 @@ class UserRoleResource(AssociationModelResource):
     def has_add_permission(self, obj):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
             .filter(User.id == obj.user_id).scalar()
+
+
+class PrinterConfigResource(ModelResource):
+
+    model = PrinterConfig
+    schema = PrinterConfigSchema
+
+    auth_required = True
+    roles_accepted = ('admin', 'owner', 'staff')
+
+    def has_read_permission(self, qs):
+        if current_user.has_permission('view_product_config'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
+        return qs.filter(false())
+
+    def has_change_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('change_printer_config')
+
+    def has_delete_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('delete_printer_config')
+
+    def has_add_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_product_config')
+
+
+class RegistrationDetailResource(ModelResource):
+
+    model = RegistrationDetail
+    schema = RegistrationDetailSchema
+
+    auth_required = True
+    roles_accepted = ('admin', 'owner', 'staff')
+
+    def has_read_permission(self, qs):
+        if current_user.has_permission('view_registration_detail'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
+        return qs.filter(false())
+
+    def has_change_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('change_registration_detail')
+
+    def has_delete_permission(self, obj):
+        return current_user.has_shop_access(obj.retail_shop_id) and \
+               current_user.has_permission('delete_registration_detail')
+
+    def has_add_permission(self, obj):
+
+        return current_user.has_permission('create_registration_detail')
 

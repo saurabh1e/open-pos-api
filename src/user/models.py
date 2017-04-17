@@ -140,7 +140,7 @@ class User(BaseMixin, db.Model, UserMixin, ReprMixin):
     current_login_ip = db.Column(db.String(45))
     login_count = db.Column(db.Integer)
 
-    retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True, nullable=False)
+    retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True)
 
     retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id], back_populates='users')
     roles = db.relationship('Role', back_populates='users', secondary='user_role')

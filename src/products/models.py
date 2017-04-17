@@ -70,7 +70,7 @@ class Distributor(BaseMixin, db.Model, ReprMixin):
 
     @hybrid_property
     def products(self):
-        return Product.query.filter(Product.brand_id.in_
+        return Product.query.filter(Product.is_disabled == False, Product.brand_id.in_
                                     ([i[0] for i in BrandDistributor.query.with_entities(BrandDistributor.brand_id)
                                      .filter(BrandDistributor.distributor_id == self.id).all()])).all()
 
@@ -145,8 +145,8 @@ class BrandDistributor(BaseMixin, db.Model, ReprMixin):
 
     __repr_fields__ = ['brand_id', 'distributor_id']
 
-    brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True)
-    distributor_id = db.Column(UUID, db.ForeignKey('distributor.id'), index=True)
+    brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True, nullable=False)
+    distributor_id = db.Column(UUID, db.ForeignKey('distributor.id'), index=True, nullable=False)
 
     brand = db.relationship('Brand', foreign_keys=[brand_id])
     distributor = db.relationship('Distributor', foreign_keys=[distributor_id])
@@ -197,8 +197,8 @@ class Product(BaseMixin, db.Model, ReprMixin):
     is_loose = db.Column(db.Boolean(), default=False)
     barcode = db.Column(db.String(13), nullable=True)
 
-    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
-    brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True)
+    retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
+    brand_id = db.Column(UUID, db.ForeignKey('brand.id'), index=True, nullable=False)
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, back_populates='products')
     taxes = db.relationship('Tax', back_populates='products', secondary='product_tax')

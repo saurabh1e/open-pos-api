@@ -6,7 +6,7 @@ from src.utils.methods import List
 from .resources import UserResource, UserRoleResource, RoleResource,\
     RetailBrandResource, RetailShopResource, UserRetailShopResource, CustomerResource, AddressResource,\
     LocalityResource, CityResource, CustomerAddressResource, CustomerTransactionResource, \
-    UserPermissionResource, PermissionResource
+    UserPermissionResource, PermissionResource, PrinterConfigResource, RegistrationDetailResource
 from src import api
 from .models import User
 
@@ -152,4 +152,20 @@ class CustomerTransactionView(BaseView):
     @classmethod
     def get_resource(cls):
         return CustomerTransactionResource
+
+
+@api.register()
+class PrinterConfigView(BaseView):
+
+    @classmethod
+    def get_resource(cls):
+        return PrinterConfigResource
+
+
+@api.register()
+class RegistrationDetailView(BaseView):
+
+    @classmethod
+    def get_resource(cls):
+        return RegistrationDetailResource
 

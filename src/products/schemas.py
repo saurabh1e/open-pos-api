@@ -130,7 +130,7 @@ class StockSchema(BaseSchema):
     purchase_amount = ma.Float(precision=2)
     selling_amount = ma.Float(precision=2)
     units_purchased = ma.Integer()
-    batch_number = ma.String()
+    batch_number = ma.String(load=True)
     expiry_date = ma.Date()
     product_name = ma.String()
     product_id = ma.UUID(load=True)
