@@ -46,14 +46,14 @@ class UserResource(ModelResource):
             return qs.filter(User.id == current_user.id)
 
     def has_change_permission(self, obj):
-        return True
+        return False
 
     def has_delete_permission(self, obj):
-        return True
+        return False
 
     def has_add_permission(self, obj):
 
-        return True
+        return False
 
 
 class RetailShopResource(ModelResource):
@@ -172,10 +172,13 @@ class CustomerResource(ModelResource):
             return True
         return False
 
-    def has_add_permission(self, obj):
-        if obj.retail_brand_id == current_user.retail_brand_id and current_user.has_permission('add_customer'):
-            return True
-        return False
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('add_customer'):
+            return False
+        for obj in objects:
+            if not obj.retail_brand_id == current_user.retail_brand_id:
+                return False
+        return True
 
 
 class AddressResource(ModelResource):
@@ -389,8 +392,13 @@ class PrinterConfigResource(ModelResource):
     def has_delete_permission(self, obj):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('delete_printer_config')
 
-    def has_add_permission(self, obj):
-        return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('create_product_config')
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_product_config'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
 
 
 class RegistrationDetailResource(ModelResource):
@@ -414,7 +422,10 @@ class RegistrationDetailResource(ModelResource):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('delete_registration_detail')
 
-    def has_add_permission(self, obj):
-
-        return current_user.has_permission('create_registration_detail')
-
+    def has_add_permission(self, objects):
+        if not current_user.has_permission('create_registration_detail'):
+            return False
+        for obj in objects:
+            if not current_user.has_shop_access(obj.retail_shop_id):
+                return False
+        return True
