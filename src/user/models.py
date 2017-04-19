@@ -76,6 +76,7 @@ class RetailShop(BaseMixin, db.Model, ReprMixin):
     retail_brand_id = db.Column(UUID, db.ForeignKey('retail_brand.id'), index=True)
     address_id = db.Column(UUID, db.ForeignKey('address.id'), unique=True, index=True)
     invoice_number = db.Column(db.Integer, default=0, nullable=False)
+    separate_offline_billing = db.Column(db.Boolean, default=False)
 
     retail_brand = db.relationship('RetailBrand', foreign_keys=[retail_brand_id], back_populates='retail_shops')
     users = db.relationship('User', back_populates='retail_shops', secondary='user_retail_shop', lazy='dynamic')

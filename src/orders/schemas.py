@@ -18,10 +18,11 @@ class OrderSchema(BaseSchema):
     customer_id = ma.UUID(load=True, required=False, allow_none=True)
     address_id = ma.UUID(load=True, required=False, partial=True, allow_none=True)
     discount_id = ma.UUID()
+    current_status_id = ma.UUID(load=True)
     user_id = ma.UUID(dump_only=True)
     items_count = ma.Integer(dump_only=True)
     amount_due = ma.Integer()
-    invoice_number = ma.Integer(dump_only=True)
+    invoice_number = ma.Integer(dump_only=True, allow_none=True)
 
     items = ma.Nested('ItemSchema', many=True, exclude=('order', 'order_id'), load=True)
     retail_shop = ma.Nested('RetailShopSchema', many=False, only=('id', 'name'))
@@ -29,11 +30,15 @@ class OrderSchema(BaseSchema):
     created_by = ma.Nested('UserSchema', many=False, dump_only=True, only=['id', 'name'])
     address = ma.Nested('AddressSchema', many=False, dump_only=True, only=['id', 'name'])
     discounts = ma.Nested('DiscountSchema', many=True, load=True)
+    current_status = ma.Nested('StatusSchema', many=False, dump_only=True)
 
     @post_load
     def save_data(self, obj):
         obj.user_id = current_user.id
+        print(Order.query.with_entities(func.Count(Order.id)).filter(Order.retail_shop_id == obj.retail_shop_id).scalar()+1)
         obj.invoice_number = Order.query.with_entities(func.Count(Order.id)).filter(Order.retail_shop_id == obj.retail_shop_id).scalar()+1
+        if obj.current_status_id is None:
+            obj.current_status_id = Status.query.with_entities(Status.id).filter(Status.name == 'PLACED').first()
         return obj
 
 

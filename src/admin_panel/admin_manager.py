@@ -3,7 +3,7 @@ from flask_security import current_user
 from src import admin, db
 from src.user.models import User, Role, Permission, UserRole, RetailBrand, RetailShop, UserRetailShop, \
     Address, Locality, City, Customer, RegistrationDetail, CustomerAddress, CustomerTransaction, PrinterConfig
-from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax
+from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax, OrderStatus
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
     DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt
 
@@ -70,6 +70,7 @@ admin.add_view(MyModel(Stock, session=db.session))
 
 
 admin.add_view(MyModel(Order, session=db.session))
+admin.add_view(MyModel(OrderStatus, session=db.session))
 admin.add_view(MyModel(Item, session=db.session))
 admin.add_view(MyModel(ItemTax, session=db.session))
 admin.add_view(MyModel(ItemAddOn, session=db.session))

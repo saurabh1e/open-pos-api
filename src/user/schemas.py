@@ -138,6 +138,8 @@ class RegistrationDetailSchema(BaseSchema):
         model = RegistrationDetail
         exclude = ('created_on', 'updated_on', 'retail_shop')
 
+    retail_shop_id = ma.UUID(load=True, allow_none=False)
+
 
 class CustomerAddressSchema(BaseSchema):
     class Meta:
@@ -175,5 +177,5 @@ class PrinterConfigSchema(BaseSchema):
         model = PrinterConfig
         exclude = ('created_on', 'updated_on')
 
-    retail_shop_id = ma.UUID(load=True)
+    retail_shop_id = ma.UUID(load=True, allow_none=False)
     have_bill_printer = ma.Boolean(load=True)
