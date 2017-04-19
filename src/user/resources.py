@@ -176,7 +176,7 @@ class CustomerResource(ModelResource):
         if not current_user.has_permission('add_customer'):
             return False
         for obj in objects:
-            if not obj.retail_brand_id == current_user.retail_brand_id:
+            if not str(obj.retail_brand_id) == current_user.retail_brand_id:
                 return False
         return True
 
