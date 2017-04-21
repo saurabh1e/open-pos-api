@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Type, List, Tuple
 
-from sqlalchemy.exc import OperationalError, IntegrityError
 from flask import request
-from .models import db
+from sqlalchemy.exc import OperationalError, IntegrityError
+
 from .exceptions import ResourceNotFound, SQLIntegrityError, SQlOperationalError, CustomException, RequestNotAllowed
+from .models import db
 
 
 class ModelResource(ABC):
-
     model = None
     schema = None
 
@@ -32,7 +32,11 @@ class ModelResource(ABC):
 
     page: int = 1
 
-    auth_required = False
+    auth_required: bool = False
+
+    export: bool = False
+
+    max_export_limit: int = 5000
 
     roles_accepted: Tuple[str] = ()
 
@@ -121,7 +125,7 @@ class ModelResource(ABC):
                                           status=400)
             return {'success': True, 'message': 'obj updated successfully',
                     'data': self.schema(exclude=tuple(self.obj_exclude), only=tuple(self.obj_only))
-                    .dump(obj).data}, 200
+                        .dump(obj).data}, 200
 
         return {'error': True, 'message': 'Forbidden Permission Denied To Change Resource'}, 403
 
@@ -178,19 +182,19 @@ class ModelResource(ABC):
                     .dump(objects, many=True).data}, 201
 
     @abstractmethod
-    def has_read_permission(self, qs)-> Type(db.Model):
+    def has_read_permission(self, qs) -> Type(db.Model):
         return qs
 
     @abstractmethod
-    def has_change_permission(self, obj)-> bool:
+    def has_change_permission(self, obj) -> bool:
         return True
 
     @abstractmethod
-    def has_delete_permission(self, obj)-> bool:
+    def has_delete_permission(self, obj) -> bool:
         return True
 
     @abstractmethod
-    def has_add_permission(self, obj)-> bool:
+    def has_add_permission(self, obj) -> bool:
         return True
 
 
@@ -355,13 +359,13 @@ class AssociationModelResource(ABC):
         return qs
 
     @abstractmethod
-    def has_change_permission(self, obj)-> bool:
+    def has_change_permission(self, obj) -> bool:
         return True
 
     @abstractmethod
-    def has_delete_permission(self, obj)-> bool:
+    def has_delete_permission(self, obj) -> bool:
         return True
 
     @abstractmethod
-    def has_add_permission(self, obj)-> bool:
+    def has_add_permission(self, obj) -> bool:
         return True

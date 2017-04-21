@@ -6,6 +6,7 @@ from flask_restful import Api
 from flask_restful import Resource
 from flask import request, jsonify, make_response
 from flask_security import auth_token_required, roles_accepted, roles_required
+from flask_excel import make_response_from_records
 
 from .models import db
 from .blue_prints import bp
@@ -89,6 +90,13 @@ class BaseView(Resource):
 
             if '__order_by' in request.args:
                 objects = self.resource.apply_ordering(objects, request.args['__order_by'])
+
+            if '__export__' in request.args and self.resource.export is True:
+                objects = objects.paginate(page=self.resource.page, per_page=self.resource.limit)
+                return make_response_from_records(
+                    self.resource.schema(exclude=tuple(self.resource.obj_exclude), only=tuple(self.resource.obj_only))
+                        .dump(objects.items, many=True).data, 'csv', 200,  self.resource.model.__name__)
+
             resources = objects.paginate(page=self.resource.page, per_page=self.resource.limit)
             if resources.items:
                 return make_response(jsonify({'success': True,

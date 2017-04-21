@@ -100,6 +100,10 @@ class StockResource(ModelResource):
 
     auth_required = True
 
+    roles_accepted = ('admin', 'owner', 'staff')
+
+    export = True
+
     optional = ('product', 'retail_shop', 'distributor_bill', 'product_name', 'retail_shop_id')
 
     filters = {
