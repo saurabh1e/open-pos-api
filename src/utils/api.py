@@ -92,7 +92,7 @@ class BaseView(Resource):
                 objects = self.resource.apply_ordering(objects, request.args['__order_by'])
 
             if '__export__' in request.args and self.resource.export is True:
-                objects = objects.paginate(page=self.resource.page, per_page=self.resource.limit)
+                objects = objects.paginate(page=self.resource.page, per_page=self.resource.max_export_limit)
                 return make_response_from_records(
                     self.resource.schema(exclude=tuple(self.resource.obj_exclude), only=tuple(self.resource.obj_only))
                         .dump(objects.items, many=True).data, 'csv', 200,  self.resource.model.__name__)

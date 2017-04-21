@@ -104,6 +104,8 @@ class StockResource(ModelResource):
 
     export = True
 
+    max_export_limit = 500
+
     optional = ('product', 'retail_shop', 'distributor_bill', 'product_name', 'retail_shop_id')
 
     filters = {
