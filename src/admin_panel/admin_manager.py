@@ -142,24 +142,30 @@ class StockAdmin(MyModel):
 
 
 class ProductTaxAdmin(MyModel):
+    column_filters = ('product.name', 'product.retail_shop', 'tax')
     column_searchable_list = ('product.name', 'product.retail_shop_id', 'product.retail_shop.name')
     form_ajax_refs = {
+        'tax': QueryAjaxModelLoader('tax', db.session, Tax, fields=['name'], page_size=10),
         'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
     }
 
 
 class ProductSaltAdmin(MyModel):
+    column_filters = ('product.name', 'product.retail_shop', 'salt')
     column_searchable_list = ('product.name', 'product.retail_shop_id', 'product.retail_shop.name')
 
     form_ajax_refs = {
+        'salt': QueryAjaxModelLoader('salt', db.session, Salt, fields=['name'], page_size=10),
         'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),
     }
 
 
 class ProductTagAdmin(MyModel):
+    column_filters = ('product.name', 'product.retail_shop', 'tag')
     column_searchable_list = ('product.name', 'product.retail_shop_id', 'product.retail_shop.name')
 
     form_ajax_refs = {
+        'tag': QueryAjaxModelLoader('tag', db.session, Tag, fields=['name'], page_size=10),
         'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),
     }
 
