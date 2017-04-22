@@ -5,7 +5,7 @@ from src.user.models import User, Role, Permission, UserRole, RetailBrand, Retai
     Address, Locality, City, Customer, RegistrationDetail, CustomerAddress, CustomerTransaction, PrinterConfig
 from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax, OrderStatus
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
-    DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt
+    DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt, BrandDistributor
 
 
 class MyModel(AdminImportExport):
@@ -28,13 +28,40 @@ class DistributorBillAdmin(MyModel):
 class InventoryAdmin(MyModel):
     column_sortable_list = ('name',)
     column_searchable_list = ('id', 'retail_shop_id', 'name')
-    pass
 
 
 class InventoryAssociationAdmin(MyModel):
 
     column_searchable_list = ('id', 'retail_shop_id')
-    pass
+
+
+class TaxAdmin(MyModel):
+    form_excluded_columns = ('products',)
+    column_sortable_list = ('name',)
+    column_searchable_list = ('id', 'retail_shop_id', 'name')
+
+
+class SaltAdmin(MyModel):
+    form_excluded_columns = ('products',)
+    column_sortable_list = ('name',)
+    column_searchable_list = ('id', 'retail_shop_id', 'name')
+
+
+class TagAdmin(MyModel):
+    form_excluded_columns = ('products',)
+    column_sortable_list = ('name',)
+    column_searchable_list = ('id', 'retail_shop_id', 'name')
+
+
+class BrandAdmin(MyModel):
+    form_excluded_columns = ('products',)
+    column_sortable_list = ('name',)
+    column_searchable_list = ('id', 'retail_shop_id', 'name')
+
+
+class BrandDistributorAdmin(MyModel):
+
+    column_searchable_list = ('id', 'brand_id', 'distributor_id')
 
 
 admin.add_view(MyModel(User, session=db.session))
@@ -55,18 +82,19 @@ admin.add_view(MyModel(Locality, session=db.session))
 admin.add_view(MyModel(City, session=db.session))
 
 admin.add_view(MyModel(ProductTax, session=db.session))
-admin.add_view(MyModel(Tag, session=db.session))
+admin.add_view(TagAdmin(Tag, session=db.session))
 admin.add_view(MyModel(AddOn, session=db.session))
 admin.add_view(MyModel(Combo, session=db.session))
-admin.add_view(InventoryAdmin(Salt, session=db.session))
+admin.add_view(SaltAdmin(Salt, session=db.session))
 admin.add_view(MyModel(ProductSalt, session=db.session))
-admin.add_view(InventoryAdmin(Brand, session=db.session))
+admin.add_view(BrandAdmin(Brand, session=db.session))
 admin.add_view(MyModel(Tax, session=db.session))
 admin.add_view(InventoryAdmin(Product, session=db.session))
 admin.add_view(MyModel(ProductType, session=db.session))
 admin.add_view(MyModel(Distributor, session=db.session))
 admin.add_view(DistributorBillAdmin(DistributorBill, session=db.session))
 admin.add_view(MyModel(Stock, session=db.session))
+admin.add_view(BrandDistributorAdmin(BrandDistributor, session=db.session))
 
 
 admin.add_view(MyModel(Order, session=db.session))
