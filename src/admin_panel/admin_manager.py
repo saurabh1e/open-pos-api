@@ -1,3 +1,4 @@
+from flask_admin.contrib.sqla.ajax import QueryAjaxModelLoader
 from flask_admin_impexp.admin_impexp import AdminImportExport
 from flask_security import current_user
 from src import admin, db
@@ -5,11 +6,13 @@ from src.user.models import User, Role, Permission, UserRole, RetailBrand, Retai
     Address, Locality, City, Customer, RegistrationDetail, CustomerAddress, CustomerTransaction, PrinterConfig
 from src.orders.models import OrderDiscount, Status, Item, ItemAddOn, Order, Discount, ItemTax, OrderStatus
 from src.products.models import ProductTax, Tax, Product, ProductType, Stock, Distributor,\
-    DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt, BrandDistributor
+    DistributorBill, Tag, Brand, Salt, AddOn, Combo, ProductSalt, BrandDistributor, ProductTag
 
 
 class MyModel(AdminImportExport):
     page_size = 100
+    can_set_page_size = True
+    can_view_details = True
 
     def is_accessible(self):
         return current_user.has_role('admin')
@@ -17,51 +20,148 @@ class MyModel(AdminImportExport):
 
 class RetailShopAdmin(MyModel):
 
-    form_excluded_columns = ('products', 'orders', 'brands', 'distributors')
+    column_filters = ('name', 'products.name')
+    form_excluded_columns = ('products', 'brands', 'orders')
+
+    form_ajax_refs = {
+        'registration_details': QueryAjaxModelLoader('registration_details', db.session, RegistrationDetail,
+                                                     fields=['name'], page_size=10),
+        'printer_config': QueryAjaxModelLoader('printer_config', db.session, PrinterConfig, fields=['id'], page_size=10),
+        'users': QueryAjaxModelLoader('users', db.session, User, fields=['name'], page_size=10),
+        'orders': QueryAjaxModelLoader('orders', db.session, Order, fields=['id'], page_size=10),
+        'retail_brand': QueryAjaxModelLoader('retail_brand', db.session, RetailBrand, fields=['name'], page_size=10),
+        'brands': QueryAjaxModelLoader('brands', db.session, Brand, fields=['name'], page_size=10),
+        'tags': QueryAjaxModelLoader('tags', db.session, Tag, fields=['name'], page_size=10),
+        'salts': QueryAjaxModelLoader('salts', db.session, Salt, fields=['name'], page_size=10),
+        'taxes': QueryAjaxModelLoader('taxes', db.session, Tax, fields=['name'], page_size=10),
+        'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
+        'distributors': QueryAjaxModelLoader('distributors', db.session, Distributor, fields=['name'], page_size=10),
+
+    }
 
 
 class DistributorBillAdmin(MyModel):
 
-    form_excluded_columns = ('purchased_items',)
+    column_searchable_list = ('id',  'purchase_date', 'reference_number')
+    column_filters = ('distributor.name', 'distributor.retail_shop.name', 'purchase_date', 'reference_number')
+
+    form_ajax_refs = {
+        'distributor': QueryAjaxModelLoader('distributor', db.session, Distributor, fields=['name'], page_size=10),
+        'purchased_items':  QueryAjaxModelLoader('purchased_items', db.session, Stock, fields=['product_name'],
+                                                 page_size=10),
+    }
 
 
-class InventoryAdmin(MyModel):
-    column_sortable_list = ('name',)
-    column_searchable_list = ('id', 'retail_shop_id', 'name')
+class ProductAdmin(MyModel):
 
+    column_filters = ('retail_shop', 'brand', 'tags', 'taxes', 'salts')
 
-class InventoryAssociationAdmin(MyModel):
+    column_searchable_list = ('id', 'retail_shop_id', 'name', 'quantity_label')
+    column_editable_list = ('retail_shop_id', 'name', 'quantity_label', 'default_quantity', 'sub_description',
+                            'is_loose', 'is_disabled', 'barcode', 'min_stock', 'auto_discount')
 
-    column_searchable_list = ('id', 'retail_shop_id')
+    form_ajax_refs = {
+        'brand': QueryAjaxModelLoader('brand', db.session, Brand, fields=['name'], page_size=10),
+        'retail_shop': QueryAjaxModelLoader('retail_shop', db.session, RetailShop, fields=['name'], page_size=10),
+        'stocks': QueryAjaxModelLoader('stocks', db.session, Stock, fields=['product_name'], page_size=10),
+        'tags': QueryAjaxModelLoader('tags', db.session, Tag, fields=['name'], page_size=10),
+        'salts': QueryAjaxModelLoader('salts', db.session, Salt, fields=['name'], page_size=10),
+        'taxes': QueryAjaxModelLoader('taxes', db.session, Tax, fields=['name'], page_size=10),
+    }
+
+    inline_models = (Tag, Tax, Salt)
 
 
 class TaxAdmin(MyModel):
-    form_excluded_columns = ('products',)
+
     column_sortable_list = ('name',)
     column_searchable_list = ('id', 'retail_shop_id', 'name')
+    column_editable_list = ('name', 'retail_shop_id')
+    column_filters = ('products.name', 'retail_shop')
+
+    form_ajax_refs = {
+        'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
+        'retail_shop': QueryAjaxModelLoader('retail_shop', db.session, RetailShop, fields=['name'], page_size=10),
+    }
+
+    inline_models = (Product,)
 
 
 class SaltAdmin(MyModel):
-    form_excluded_columns = ('products',)
     column_sortable_list = ('name',)
     column_searchable_list = ('id', 'retail_shop_id', 'name')
+    column_editable_list = ('name', 'retail_shop_id')
+    column_filters = ('products.name', 'retail_shop')
+
+    form_ajax_refs = {
+        'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
+        'retail_shop': QueryAjaxModelLoader('retail_shop', db.session, RetailShop, fields=['name'], page_size=10),
+    }
 
 
 class TagAdmin(MyModel):
-    form_excluded_columns = ('products',)
     column_sortable_list = ('name',)
     column_searchable_list = ('id', 'retail_shop_id', 'name')
+    column_editable_list = ('name', 'retail_shop_id')
+    column_filters = ('products.name', 'retail_shop')
+
+    form_ajax_refs = {
+        'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),
+        'retail_shop': QueryAjaxModelLoader('retail_shop', db.session, RetailShop, fields=['name'], page_size=10),
+    }
 
 
 class BrandAdmin(MyModel):
-    form_excluded_columns = ('products',)
+
     column_sortable_list = ('name',)
     column_searchable_list = ('id', 'retail_shop_id', 'name')
+    column_editable_list = ('name', 'retail_shop_id')
+    column_filters = ('products.name', 'retail_shop')
+
+    form_ajax_refs = {
+        'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
+        'retail_shop': QueryAjaxModelLoader('retail_shop', db.session, RetailShop, fields=['name'], page_size=10),
+        'distributors': QueryAjaxModelLoader('distributors', db.session, Distributor, fields=['name'], page_size=10)
+    }
 
 
 class BrandDistributorAdmin(MyModel):
 
     column_searchable_list = ('id', 'brand_id', 'distributor_id')
+
+
+class StockAdmin(MyModel):
+
+    column_filters = ('product.name', 'product.retail_shop')
+
+    form_ajax_refs = {
+        'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),
+        'distributor_bill': QueryAjaxModelLoader('distributor_bill', db.session, DistributorBill,
+                                                 fields=['distributor_name', 'retail_shop_name'], page_size=10)
+    }
+
+
+class ProductTaxAdmin(MyModel):
+    column_searchable_list = ('product.name', 'product.retail_shop_id', 'product.retail_shop.name')
+    form_ajax_refs = {
+        'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
+    }
+
+
+class ProductSaltAdmin(MyModel):
+    column_searchable_list = ('product.name', 'product.retail_shop_id', 'product.retail_shop.name')
+
+    form_ajax_refs = {
+        'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),
+    }
+
+
+class ProductTagAdmin(MyModel):
+    column_searchable_list = ('product.name', 'product.retail_shop_id', 'product.retail_shop.name')
+
+    form_ajax_refs = {
+        'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),
+    }
 
 
 admin.add_view(MyModel(User, session=db.session))
@@ -81,19 +181,22 @@ admin.add_view(MyModel(CustomerAddress, session=db.session))
 admin.add_view(MyModel(Locality, session=db.session))
 admin.add_view(MyModel(City, session=db.session))
 
-admin.add_view(MyModel(ProductTax, session=db.session))
+
+admin.add_view(ProductAdmin(Product, session=db.session))
 admin.add_view(TagAdmin(Tag, session=db.session))
+admin.add_view(SaltAdmin(Salt, session=db.session))
+admin.add_view(BrandAdmin(Brand, session=db.session))
+admin.add_view(StockAdmin(Stock, session=db.session))
+admin.add_view(MyModel(Distributor, session=db.session))
+admin.add_view(MyModel(Tax, session=db.session))
+
+admin.add_view(ProductTaxAdmin(ProductTax, session=db.session))
+admin.add_view(ProductSaltAdmin(ProductSalt, session=db.session))
+admin.add_view(ProductTagAdmin(ProductTag, session=db.session))
 admin.add_view(MyModel(AddOn, session=db.session))
 admin.add_view(MyModel(Combo, session=db.session))
-admin.add_view(SaltAdmin(Salt, session=db.session))
-admin.add_view(MyModel(ProductSalt, session=db.session))
-admin.add_view(BrandAdmin(Brand, session=db.session))
-admin.add_view(MyModel(Tax, session=db.session))
-admin.add_view(InventoryAdmin(Product, session=db.session))
 admin.add_view(MyModel(ProductType, session=db.session))
-admin.add_view(MyModel(Distributor, session=db.session))
 admin.add_view(DistributorBillAdmin(DistributorBill, session=db.session))
-admin.add_view(MyModel(Stock, session=db.session))
 admin.add_view(BrandDistributorAdmin(BrandDistributor, session=db.session))
 
 

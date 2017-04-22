@@ -6,6 +6,7 @@ from sqlalchemy import and_, func, select, or_
 
 from src import db, BaseMixin, ReprMixin
 from src.orders.models import Item
+from src.user.models import RetailShop
 
 
 class Brand(BaseMixin, db.Model, ReprMixin):
@@ -61,12 +62,19 @@ class Distributor(BaseMixin, db.Model, ReprMixin):
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     bills = db.relationship('DistributorBill', uselist=True, back_populates='distributor', lazy='dynamic')
-    # products = db.relationship('Product', uselist=True, back_populates='distributors', lazy='dynamic',
-    #                            secondary='product_distributor')
+
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='distributors')
     brands = db.relationship('Brand', back_populates='distributors', secondary='brand_distributor')
 
     UniqueConstraint(name, retail_shop_id)
+
+    @hybrid_property
+    def retail_shop_name(self):
+        return self.retail_shop.name
+
+    @retail_shop_name.expression
+    def retail_shop_name(self):
+        return select([RetailShop.name]).where(RetailShop.id == self.retail_shop_id).as_scalar()
 
     @hybrid_property
     def products(self):
@@ -101,6 +109,22 @@ class DistributorBill(BaseMixin, db.Model, ReprMixin):
     @retail_shop_id.expression
     def retail_shop_id(self):
         return select([Distributor.retail_shop_id]).where(Distributor.id == self.distributor_id).as_scalar()
+
+    @hybrid_property
+    def retail_shop_name(self):
+        return self.distributor.retail_shop.name
+
+    @retail_shop_name.expression
+    def retail_shop_name(self):
+        return select([Distributor.retail_shop_name]).where(Distributor.id == self.distributor_id).as_scalar()
+
+    @hybrid_property
+    def distributor_name(self):
+        return self.distributor.name
+
+    @distributor_name.expression
+    def distributor_name(self):
+        return select([Distributor.name]).where(Distributor.id == self.distributor_id).as_scalar()
 
 
 class ProductType(BaseMixin, db.Model, ReprMixin):

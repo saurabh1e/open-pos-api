@@ -118,8 +118,9 @@ class ProductSchema(BaseSchema):
     stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
                                                        'units_sold', 'expiry_date', 'purchase_date', 'id'))
     taxes = ma.Nested('TaxSchema', many=True, dump_only=True, only=('id', 'name', 'value'))
-    available_stocks = ma.Nested('StockSchema', many=True, only=('purchase_amount', 'selling_amount', 'units_purchased',
-                                                                 'units_sold', 'expiry_date', 'purchase_date', 'id'))
+    available_stocks = ma.Nested('StockSchema', many=True, dump_only=True,
+                                 only=('purchase_amount', 'selling_amount', 'units_purchased',
+                                       'units_sold', 'expiry_date', 'purchase_date', 'id'))
 
 
 class StockSchema(BaseSchema):
