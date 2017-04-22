@@ -39,9 +39,7 @@
             <span class="icon-bar"></span>
           </button>
           {% block brand %}
-{#          <a class="navbar-brand" href="#" style="min-height: 75px;padding: 15px">#}
-{#            <img src="/static/admin/logo_colored.png" style="max-height: 50px">#}
-{#          </a>#}
+
 
           {% endblock %}
         </div>
@@ -49,6 +47,12 @@
         <div class="collapse navbar-collapse" id="admin-navbar-collapse">
           {% block main_menu %}
           <ul class="nav navbar-nav">
+           <li>
+              <a class="navbar-brand" href="#" style="min-height: 125px;padding: 15px">
+            <img src="/static/admin/logo.png" style="max-height: 125px">
+          </a>
+           </li>
+
             {{ layout.menu() }}
             <li>
               <a class="btn-link push-right" style="color: red" href="{{url_for('security.logout')}}">LOGOUT</a>
