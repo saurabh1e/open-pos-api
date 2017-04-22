@@ -192,7 +192,9 @@ class Product(BaseMixin, db.Model, ReprMixin):
     sub_description = db.Column(db.Text(), nullable=True)
     is_disabled = db.Column(db.Boolean(), default=False)
     default_quantity = db.Column(db.Float(precision=2), default=1)
-    quantity_label = db.Column(db.Enum('KG', 'GM', 'MG', 'L', 'ML', 'TAB', 'SYRUP', 'OTH', name='varchar'),
+    quantity_label = db.Column(db.Enum('KG', 'GM', 'MG', 'L', 'ML', 'TAB', 'SYRUP', 'OTH', 'TAB', 'ML', 'CAP', 'INJ',
+                                       'BOTTLE', 'VAIL', 'KIT', 'STRIP', 'OTHER', 'PACK', 'SET', 'LTR', 'SACHET',
+                                       'PILLS', 'SYRINGE', 'SYRUP', 'ROLL', name='varchar'),
                                default='OTH', nullable=True)
     is_loose = db.Column(db.Boolean(), default=False)
     barcode = db.Column(db.String(13), nullable=True)
@@ -314,6 +316,7 @@ class Stock(BaseMixin, db.Model, ReprMixin):
     batch_number = db.Column(db.String(25), nullable=True)
     expiry_date = db.Column(db.Date, nullable=True)
     is_sold = db.Column(db.Boolean(), default=False, index=True)
+    default_stock = db.Column(db.Boolean, default=False, nullable=True)
 
     distributor_bill_id = db.Column(UUID, db.ForeignKey('distributor_bill.id'), nullable=True, index=True)
     product_id = db.Column(UUID, db.ForeignKey('product.id'), nullable=False, index=True)
