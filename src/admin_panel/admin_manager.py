@@ -72,6 +72,15 @@ class ProductAdmin(MyModel):
     inline_models = (Tag, Tax, Salt)
 
 
+class DistributorAdmin(MyModel):
+
+    column_editable_list = ('name',)
+    column_filters = ('brands', 'retail_shop')
+    form_ajax_refs = {
+        'brands': QueryAjaxModelLoader('brands', db.session, Brand, fields=['name'], page_size=10),
+    }
+
+
 class TaxAdmin(MyModel):
 
     column_sortable_list = ('name',)
@@ -83,8 +92,6 @@ class TaxAdmin(MyModel):
         'products': QueryAjaxModelLoader('products', db.session, Product, fields=['name'], page_size=10),
         'retail_shop': QueryAjaxModelLoader('retail_shop', db.session, RetailShop, fields=['name'], page_size=10),
     }
-
-    inline_models = (Product,)
 
 
 class SaltAdmin(MyModel):
@@ -195,8 +202,8 @@ admin.add_view(TagAdmin(Tag, session=db.session))
 admin.add_view(SaltAdmin(Salt, session=db.session))
 admin.add_view(BrandAdmin(Brand, session=db.session))
 admin.add_view(StockAdmin(Stock, session=db.session))
-admin.add_view(MyModel(Distributor, session=db.session))
-admin.add_view(MyModel(Tax, session=db.session))
+admin.add_view(DistributorAdmin(Distributor, session=db.session))
+admin.add_view(TaxAdmin(Tax, session=db.session))
 
 admin.add_view(ProductTaxAdmin(ProductTax, session=db.session))
 admin.add_view(ProductSaltAdmin(ProductSalt, session=db.session))
