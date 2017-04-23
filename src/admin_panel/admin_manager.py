@@ -179,12 +179,22 @@ class ProductTagAdmin(MyModel):
     }
 
 
+class RoleAdmin(MyModel):
+    column_filters = ('users.name', 'name')
+    column_searchable_list = ('id',)
+
+
+class PermissionAdmin(MyModel):
+    column_filters = ('users.name', 'name')
+    column_searchable_list = ('id',)
+
+
 admin.add_view(MyModel(User, session=db.session))
 admin.add_view(MyModel(Customer, session=db.session))
 admin.add_view(MyModel(CustomerTransaction, session=db.session))
-admin.add_view(MyModel(Role, session=db.session))
+admin.add_view(RoleAdmin(Role, session=db.session))
 admin.add_view(MyModel(UserRole, session=db.session))
-admin.add_view(MyModel(Permission, session=db.session))
+admin.add_view(PermissionAdmin(Permission, session=db.session))
 
 admin.add_view(RetailShopAdmin(RetailShop, session=db.session))
 admin.add_view(MyModel(RetailBrand, session=db.session))

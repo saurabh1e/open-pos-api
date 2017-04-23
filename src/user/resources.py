@@ -1,4 +1,3 @@
-from flask import request
 from flask_security import current_user
 from sqlalchemy import or_, false
 from src.utils import ModelResource, operators as ops, AssociationModelResource
@@ -17,7 +16,7 @@ class UserResource(ModelResource):
 
     auth_required = True
 
-    roles_accepted = ('admin', 'owner')
+    roles_accepted = ('admin', 'owner', 'staff')
 
     optional = ('retail_shops', 'current_login_at', 'current_login_ip', 'created_on',
                 'last_login_at', 'last_login_ip', 'login_count', 'confirmed_at', 'permissions')
@@ -41,19 +40,27 @@ class UserResource(ModelResource):
     exclude = ()
 
     def has_read_permission(self, qs):
-        if current_user.has_role('admin') or current_user.has_role('admin'):
+        if current_user.has_role('admin') or current_user.has_role('owner'):
             return qs.filter(User.retail_brand_id == current_user.retail_brand_id)
         else:
             return qs.filter(User.id == current_user.id)
 
     def has_change_permission(self, obj):
+        if current_user.has_role('admin') or current_user.has_role('owner'):
+            if current_user.retail_brand_id == obj.retail_brand_id:
+                return True
         return False
 
     def has_delete_permission(self, obj):
+        if current_user.has_role('admin') or current_user.has_role('owner'):
+            if current_user.retail_brand_id == obj.retail_brand_id:
+                return True
         return False
 
     def has_add_permission(self, obj):
-
+        if current_user.has_role('admin') or current_user.has_role('owner'):
+            if current_user.retail_brand_id == obj.retail_brand_id:
+                return True
         return False
 
 
@@ -132,19 +139,19 @@ class UserRetailShopResource(AssociationModelResource):
         if current_user.has_permission('view_user_shops'):
             return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids)).all()
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         if current_user.has_permission('change_user_shops') and current_user.has_shop_access(obj.retail_shop_id):
             return True
         return False
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         if current_user.has_permission('delete_user_shops') and current_user.has_shop_access(obj.retail_shop_id):
             return True
         return False
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         if current_user.has_permission('add_user_shops'):
-            if not current_user.has_shop_access(request.json['retail_shop_id']):
+            if not current_user.has_shop_access(data['retail_shop_id']):
                 return False
             return True
         return False
@@ -262,13 +269,13 @@ class CustomerAddressResource(AssociationModelResource):
     def has_read_permission(self, qs):
         return qs
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return True
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return True
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         return True
 
 
@@ -331,24 +338,24 @@ class UserPermissionResource(AssociationModelResource):
     def has_read_permission(self, qs):
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         if current_user.has_permission('change_user_permissions') and \
                         current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
-                    .filter(User.id == request.json['user_id']).scalar():
+                    .filter(User.id == data['user_id']).scalar():
             return True
         return False
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         if current_user.has_permission('delete_user_permissions') and \
                         current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
-                    .filter(User.id == request.json['user_id']).scalar():
+                    .filter(User.id == data['user_id']).scalar():
             return True
         return False
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         if current_user.has_permission('add_user_permission'):
             if current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
-                    .filter(User.id == request.json['user_id']).scalar():
+                    .filter(User.id == data['user_id']).scalar():
 
                 return True
         return False
@@ -388,17 +395,17 @@ class UserRoleResource(AssociationModelResource):
     def has_read_permission(self, qs):
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == obj.user_id).scalar()
+            .filter(User.id == data['user_id']).scalar()
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == obj.user_id).scalar()
+            .filter(User.id == data['user_id']).scalar()
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == obj.user_id).scalar()
+            .filter(User.id == data['user_id']).scalar()
 
 
 class PrinterConfigResource(ModelResource):

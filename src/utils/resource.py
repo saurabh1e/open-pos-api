@@ -296,14 +296,14 @@ class AssociationModelResource(ABC):
         if errors:
             raise CustomException(data=data, message=str(errors), operation='adding relation')
 
-        if self.has_add_permission(obj):
+        if self.has_add_permission(obj, data):
             db.session.add(obj)
             try:
                 db.session.commit()
             except IntegrityError as e:
-                raise SQLIntegrityError(data=data, message='Integrity Error', operation='adding relation', status=400)
-            except OperationalError:
-                raise SQLIntegrityError(data=data, message='Operational Error', operation='adding relation', status=400)
+                raise SQLIntegrityError(data=data, message=str(e), operation='adding relation', status=400)
+            except OperationalError as e:
+                raise SQLIntegrityError(data=data, message=str(e), operation='adding relation', status=400)
         else:
             raise RequestNotAllowed(data=data, message='Object not Found', operation='adding relation',
                                     status=401)
@@ -314,7 +314,7 @@ class AssociationModelResource(ABC):
             obj, errors = self.schema().load(data, instance=obj)
             if errors:
                 raise CustomException(data=data, message=str(errors), operation='updating relation')
-            if self.has_change_permission(obj):
+            if self.has_change_permission(obj, data):
                 raise CustomException(data=data, message='Permission Denied', operation='adding relation')
             try:
                 db.session.commit()
@@ -338,7 +338,7 @@ class AssociationModelResource(ABC):
                 obj = obj.filter(getattr(self.model, k) == v)
         obj = obj.first()
         if obj:
-            if self.has_delete_permission(obj):
+            if self.has_delete_permission(obj, data):
                 db.session.delete(obj)
                 try:
                     db.session.commit()
@@ -359,13 +359,13 @@ class AssociationModelResource(ABC):
         return qs
 
     @abstractmethod
-    def has_change_permission(self, obj) -> bool:
+    def has_change_permission(self, obj, data) -> bool:
         return True
 
     @abstractmethod
-    def has_delete_permission(self, obj) -> bool:
+    def has_delete_permission(self, obj, data) -> bool:
         return True
 
     @abstractmethod
-    def has_add_permission(self, obj) -> bool:
+    def has_add_permission(self, obj, data) -> bool:
         return True
