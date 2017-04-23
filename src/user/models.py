@@ -258,3 +258,5 @@ class PrinterConfig(BaseMixin, db.Model, ReprMixin):
 
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id'))
 
+    retail_shops = db.relationship('RetailShop', back_populates='printer_config',
+                                   foreign_keys=[retail_shop_id])
