@@ -1,3 +1,4 @@
+from flask import request
 from flask_security import current_user
 from sqlalchemy import or_, false
 from src.utils import ModelResource, operators as ops, AssociationModelResource
@@ -125,19 +126,28 @@ class UserRetailShopResource(AssociationModelResource):
     schema = UserRetailShopSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner', 'staff')
+    roles_accepted = ('admin', 'owner')
 
     def has_read_permission(self, qs):
-        return qs
+        if current_user.has_permission('view_user_shops'):
+            return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids)).all()
 
     def has_change_permission(self, obj):
-        return True
+        if current_user.has_permission('change_user_shops') and current_user.has_shop_access(obj.retail_shop_id):
+            return True
+        return False
 
     def has_delete_permission(self, obj):
-        return True
+        if current_user.has_permission('delete_user_shops') and current_user.has_shop_access(obj.retail_shop_id):
+            return True
+        return False
 
     def has_add_permission(self, obj):
-        return True
+        if current_user.has_permission('add_user_shops'):
+            if not current_user.has_shop_access(request.json['retail_shop_id']):
+                return False
+            return True
+        return False
 
 
 class CustomerResource(ModelResource):
@@ -292,15 +302,21 @@ class PermissionResource(ModelResource):
     roles_accepted = ('admin', 'owner', 'staff')
 
     def has_read_permission(self, qs):
-        return qs.filter(or_(self.model.is_hidden == False, self.model.is_hidden == None))
+        if current_user.has_permission('view_permission'):
+            return qs.filter(or_(self.model.is_hidden == False, self.model.is_hidden == None))
+        return False
 
     def has_change_permission(self, obj):
+        if current_user.has_permission('change_user_shops') and current_user.has_shop_access(obj.retail_shop_id):
+            return True
         return False
 
     def has_delete_permission(self, obj):
+        if current_user.has_permission('delete_user_shops') and current_user.has_shop_access(obj.retail_shop_id):
+            return True
         return False
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, objects):
         return False
 
 
@@ -310,22 +326,32 @@ class UserPermissionResource(AssociationModelResource):
     schema = UserPermissionSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner', 'staff')
+    roles_accepted = ('admin', 'owner')
 
     def has_read_permission(self, qs):
         return qs.filter(false())
 
     def has_change_permission(self, obj):
-        return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
-            .filter(User.id == obj.user_id).scalar()
+        if current_user.has_permission('change_user_permissions') and \
+                        current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
+                    .filter(User.id == request.json['user_id']).scalar():
+            return True
+        return False
 
     def has_delete_permission(self, obj):
-        return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == obj.user_id).scalar()
+        if current_user.has_permission('delete_user_permissions') and \
+                        current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
+                    .filter(User.id == request.json['user_id']).scalar():
+            return True
+        return False
 
     def has_add_permission(self, obj):
-        return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == obj.user_id).scalar()
+        if current_user.has_permission('add_user_permission'):
+            if current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id)\
+                    .filter(User.id == request.json['user_id']).scalar():
+
+                return True
+        return False
 
 
 class RoleResource(ModelResource):
@@ -333,7 +359,9 @@ class RoleResource(ModelResource):
     schema = RoleSchema
 
     auth_required = True
-    roles_accepted = ('admin', 'owner', 'staff')
+    roles_accepted = ('admin', 'owner')
+
+    optional = ('permissions',)
 
     def has_read_permission(self, qs):
 

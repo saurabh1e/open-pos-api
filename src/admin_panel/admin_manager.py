@@ -133,6 +133,8 @@ class BrandDistributorAdmin(MyModel):
 class StockAdmin(MyModel):
 
     column_filters = ('product.name', 'product.retail_shop')
+    column_editable_list = ('selling_amount', 'purchase_amount', 'batch_number', 'expiry_date',
+                            'is_sold', 'default_stock', 'units_purchased')
 
     form_ajax_refs = {
         'product': QueryAjaxModelLoader('product', db.session, Product, fields=['name'], page_size=10),

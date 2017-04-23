@@ -24,13 +24,12 @@ class ProductResource(ModelResource):
                 'last_purchase_amount', 'last_selling_amount', 'stock_required')
 
     filters = {
-        'id': [ops.Equal, ops.In],
         'name': [ops.Equal, ops.Contains],
         'product_name': [ops.Equal, ops.Contains],
         'distributor_name': [ops.Equal, ops.Contains],
         'stock_required': [ops.Equal, ops.Greater, ops.Greaterequal],
         'available_stock': [ops.Equal, ops.Greater, ops.Greaterequal],
-        # 'distributor_id': [ops.Equal, ops.In],
+        'id': [ops.Equal, ops.In, ops.NotEqual, ops.NotIn],
         'retail_shop_id': [ops.Equal, ops.In],
         'is_short': [ops.Boolean],
         'is_disabled': [ops.Boolean],
@@ -106,7 +105,7 @@ class StockResource(ModelResource):
 
     max_export_limit = 500
 
-    optional = ('product', 'retail_shop', 'distributor_bill', 'product_name', 'retail_shop_id')
+    optional = ('product', 'retail_shop', 'distributor_bill', 'product_name', 'retail_shop_id', 'distributor_name')
 
     filters = {
         'is_sold': [ops.Boolean],
@@ -115,10 +114,12 @@ class StockResource(ModelResource):
         'units_sold': [ops.Equal, ops.Lesser, ops.LesserEqual],
         'product_name': [ops.Contains, ops.Equal],
         'retail_shop_id': [ops.Equal, ops.In],
+        'id': [ops.Equal, ops.In, ops.NotEqual, ops.NotIn],
         'distributor_id': [ops.Equal, ops.In],
         'distributor_name': [ops.Contains, ops.Equal],
         'updated_on': [ops.DateGreaterEqual, ops.DateEqual, ops.DateLesserEqual],
-        'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual]
+        'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual, ops.DateBetween],
+        'expiry_date': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual, ops.DateBetween]
     }
 
     order_by = ['expiry_date', 'units_sold', 'created_on']
@@ -195,6 +196,11 @@ class DistributorBillResource(ModelResource):
     optional = ('purchased_items',)
 
     max_limit = 50
+
+    filters = {
+        'created_on': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual, ops.DateBetween],
+        'purchase_date': [ops.DateLesserEqual, ops.DateEqual, ops.DateGreaterEqual, ops.DateBetween],
+    }
 
     default_limit = 10
 

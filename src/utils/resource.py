@@ -300,7 +300,7 @@ class AssociationModelResource(ABC):
             db.session.add(obj)
             try:
                 db.session.commit()
-            except IntegrityError:
+            except IntegrityError as e:
                 raise SQLIntegrityError(data=data, message='Integrity Error', operation='adding relation', status=400)
             except OperationalError:
                 raise SQLIntegrityError(data=data, message='Operational Error', operation='adding relation', status=400)

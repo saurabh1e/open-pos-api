@@ -31,7 +31,7 @@ class RoleSchema(BaseSchema):
 
     id = ma.UUID()
     name = ma.String()
-    permissions = ma.Nested('PermissionSchema', many=True, dump_only=True)
+    permissions = ma.Nested('PermissionSchema', many=True, dump_only=True, only=('id', 'name'))
 
 
 class UserRoleSchema(BaseSchema):
@@ -90,6 +90,9 @@ class UserRetailShopSchema(BaseSchema):
     class Meta:
         model = UserRetailShop
         exclude = ('created_on', 'updated_on')
+
+    user_id = ma.UUID(load=True, allow_none=False)
+    retail_shop_id = ma.UUID(load=True, allow_none=False)
 
 
 class CustomerSchema(BaseSchema):

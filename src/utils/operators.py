@@ -23,12 +23,30 @@ class In(Operators):
         return query.filter(getattr(model, key).in_(values))
 
 
+class NotIn(Operators):
+    op = 'not_in'
+
+    @staticmethod
+    def prepare_queryset(query, model, key, values):
+        if len(values) == 1:
+            values = values[0].split(',')
+        return query.filter(~getattr(model, key).in_(values))
+
+
 class Equal(Operators):
     op = 'equal'
 
     @staticmethod
     def prepare_queryset(query, model, key, value):
         return query.filter(getattr(model, key) == value[0])
+
+
+class NotEqual(Operators):
+    op = 'ne'
+
+    @staticmethod
+    def prepare_queryset(query, model, key, value):
+        return query.filter(getattr(model, key) != value[0])
 
 
 class Contains(Operators):

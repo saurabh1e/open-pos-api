@@ -120,7 +120,7 @@ class ProductSchema(BaseSchema):
     taxes = ma.Nested('TaxSchema', many=True, dump_only=True, only=('id', 'name', 'value'))
     available_stocks = ma.Nested('StockSchema', many=True, dump_only=True,
                                  only=('purchase_amount', 'selling_amount', 'units_purchased',
-                                       'units_sold', 'expiry_date', 'purchase_date', 'id'))
+                                       'units_sold', 'expiry_date', 'purchase_date', 'id', 'default_stock'))
 
 
 class StockSchema(BaseSchema):
@@ -139,6 +139,7 @@ class StockSchema(BaseSchema):
     units_sold = ma.Integer(dump_only=True, load=False)
     expired = ma.Boolean(dump_only=True)
     quantity_label = ma.String(dump_only=True)
+    default_stock = ma.Boolean(load=True, allow_none=True)
 
     distributor_bill = ma.Nested('DistributorBillSchema', many=False, dump_only=True, only=('id', 'distributor',
                                                                                             'reference_number'))
