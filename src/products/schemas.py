@@ -139,6 +139,7 @@ class StockSchema(BaseSchema):
     distributor_bill_id = ma.UUID(allow_none=True)
     units_sold = ma.Integer(dump_only=True, load=False)
     expired = ma.Boolean(dump_only=True)
+    brand_name = ma.String(dump_only=True)
     quantity_label = ma.String(dump_only=True)
     default_stock = ma.Boolean(load=True, allow_none=True)
 

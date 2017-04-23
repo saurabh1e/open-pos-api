@@ -297,6 +297,14 @@ class Product(BaseMixin, db.Model, ReprMixin):
     def distributors(self):
         return self.brand.distributors.all()
 
+    @hybrid_property
+    def brand_name(self):
+        return self.brand.name
+
+    @brand_name.expression
+    def brand_name(self):
+        return select([Brand.name]).where(Brand.id == self.brand_id).as_scalar()
+
 
 class Salt(BaseMixin, db.Model, ReprMixin):
 
@@ -425,6 +433,15 @@ class Stock(BaseMixin, db.Model, ReprMixin):
     @quantity_label.expression
     def quantity_label(cls):
         return select([Product.quantity_label]).where(Product.id == cls.product_id).as_scalar()
+
+    @hybrid_property
+    def brand_name(self):
+        return self.product.brand.name
+
+    @brand_name.expression
+    def brand_name(self):
+        return select([Brand.name]).where(and_(Product.id == self.product_id,
+                                                     Brand.id == Product.brand_id)).as_scalar()
 
 
 class Combo(BaseMixin, db.Model, ReprMixin):

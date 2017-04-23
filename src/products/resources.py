@@ -26,7 +26,7 @@ class ProductResource(ModelResource):
     filters = {
         'name': [ops.Equal, ops.Contains],
         'product_name': [ops.Equal, ops.Contains],
-        'distributor_name': [ops.Equal, ops.Contains],
+        'brand_name': [ops.Equal, ops.Contains],
         'stock_required': [ops.Equal, ops.Greater, ops.Greaterequal],
         'available_stock': [ops.Equal, ops.Greater, ops.Greaterequal],
         'id': [ops.Equal, ops.In, ops.NotEqual, ops.NotIn],
@@ -112,6 +112,7 @@ class StockResource(ModelResource):
         'expired': [ops.Boolean],
         'units_available': [ops.Equal, ops.Greater, ops.Greaterequal],
         'units_sold': [ops.Equal, ops.Lesser, ops.LesserEqual],
+        'brand_name': [ops.Equal, ops.Contains],
         'product_name': [ops.Contains, ops.Equal],
         'retail_shop_id': [ops.Equal, ops.In],
         'id': [ops.Equal, ops.In, ops.NotEqual, ops.NotIn],
