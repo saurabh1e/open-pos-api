@@ -12,6 +12,7 @@ class BrandSchema(BaseSchema):
     retail_shop_id = ma.UUID()
     retail_shop = ma.Nested('RetailShopSchema', many=False, dump_only=True, only=('id', 'name'))
     distributors = ma.Nested('DistributorSchema', many=True, dump_only=True, only=('id', 'name'))
+    products = ma.Nested('ProductSchema', many=True, dump_only=True, only=('id', 'name'))
 
 
 class TagSchema(BaseSchema):
