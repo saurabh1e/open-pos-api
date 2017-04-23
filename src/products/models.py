@@ -11,7 +11,7 @@ from src.user.models import RetailShop
 
 class Brand(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(55), nullable=False)
+    name = db.Column(db.String(55), nullable=False, index=True)
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
     retail_shop = db.relationship('RetailShop', foreign_keys=[retail_shop_id], uselist=False, backref='brands')
@@ -41,7 +41,7 @@ class ProductTax(BaseMixin, db.Model, ReprMixin):
 
 class Tax(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(25), nullable=False)
+    name = db.Column(db.String(25), nullable=False, index=True)
     value = db.Column(db.Float(precision=2), nullable=False)
     is_disabled = db.Column(db.Boolean(), default=False)
 
@@ -55,7 +55,7 @@ class Tax(BaseMixin, db.Model, ReprMixin):
 
 class Distributor(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(127), nullable=False)
+    name = db.Column(db.String(127), nullable=False, index=True)
     phone_numbers = db.Column(db.JSON)
     emails = db.Column(db.JSON)
 
@@ -129,13 +129,13 @@ class DistributorBill(BaseMixin, db.Model, ReprMixin):
 
 class ProductType(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80), unique=True, index=True)
     description = db.Column(db.TEXT())
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
 
 class Tag(BaseMixin, db.Model, ReprMixin):
-    name = db.Column(db.String(55), unique=False, nullable=False)
+    name = db.Column(db.String(55), unique=False, nullable=False, index=True)
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     products = db.relationship('Product', back_populates='tags', secondary='product_tag')
@@ -209,7 +209,7 @@ class ProductDistributor(BaseMixin, db.Model, ReprMixin):
 
 class Product(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(127), unique=False, nullable=False)
+    name = db.Column(db.String(127), unique=False, nullable=False, index=True)
     min_stock = db.Column(db.SmallInteger, nullable=False)
     auto_discount = db.Column(db.FLOAT(precision=2), default=0, nullable=False)
     description = db.Column(db.JSON(), nullable=True)
@@ -300,7 +300,7 @@ class Product(BaseMixin, db.Model, ReprMixin):
 
 class Salt(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(127), unique=True, nullable=False)
+    name = db.Column(db.String(127), unique=True, nullable=False, index=True)
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True, nullable=False)
 
     products = db.relationship('Product', back_populates='salts', secondary='product_salt')
@@ -429,7 +429,7 @@ class Stock(BaseMixin, db.Model, ReprMixin):
 
 class Combo(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(55), nullable=False)
+    name = db.Column(db.String(55), nullable=False, index=True)
     products = db.relationship('Product', back_populates='combos', secondary='combo_product')
 
 
@@ -446,7 +446,7 @@ class ComboProduct(BaseMixin, db.Model, ReprMixin):
 
 class AddOn(BaseMixin, db.Model, ReprMixin):
 
-    name = db.Column(db.String(127), unique=True, nullable=False)
+    name = db.Column(db.String(127), unique=True, nullable=False, index=True)
     retail_shop_id = db.Column(UUID, db.ForeignKey('retail_shop.id', ondelete='CASCADE'), index=True)
 
     products = db.relationship('Product', back_populates='add_ons', secondary='product_add_on')
