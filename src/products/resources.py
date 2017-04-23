@@ -415,15 +415,15 @@ class ProductDistributorResource(AssociationModelResource):
             return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('change_product_distributor')
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('remove_product_distributor')
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         if not current_user.has_permission('create_product_distributor') or \
                 not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
                                                          .filter(Product.id == obj.product_id).scalar()):
@@ -447,15 +447,15 @@ class ProductTagResource(AssociationModelResource):
             return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('change_product_tag')
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('remove_product_tag')
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
 
         if not current_user.has_permission('create_product_tag') or \
                 not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
@@ -485,15 +485,15 @@ class ProductSaltResource(AssociationModelResource):
             return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('change_product_salt')
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and \
                current_user.has_permission('remove_product_salt')
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         if not current_user.has_permission('create_product_salt') or \
                 not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
                                                          .filter(Product.id == obj.product_id).scalar()):
@@ -512,13 +512,13 @@ class ProductTaxResource(AssociationModelResource):
             return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('change_product_tax')
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission('remove_product_tax')
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         if not current_user.has_permission('create_product_tax') or \
                 not current_user.has_shop_access(Product.query.with_entities(Product.retail_shop_id)
                                                          .filter(Product.id == obj.product_id).scalar()):
@@ -544,15 +544,15 @@ class BrandDistributorResource(AssociationModelResource):
             return qs.filter(self.model.retail_shop_id.in_(current_user.retail_shop_ids))
         return qs.filter(false())
 
-    def has_change_permission(self, obj):
+    def has_change_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission(
             'change_brand_distributor')
 
-    def has_delete_permission(self, obj):
+    def has_delete_permission(self, obj, data):
         return current_user.has_shop_access(obj.retail_shop_id) and current_user.has_permission(
             'remove_brand_distributor')
 
-    def has_add_permission(self, obj):
+    def has_add_permission(self, obj, data):
         if not current_user.has_permission('create_brand_distributor') or \
                 not current_user.has_shop_access(Product.query.with_entities(Brand.retail_shop_id)
                                                          .filter(Brand.id == obj.brand_id).scalar()):
