@@ -397,15 +397,15 @@ class UserRoleResource(AssociationModelResource):
 
     def has_change_permission(self, obj, data):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == data['user_id']).scalar()
+            .filter(User.id == data['user_id']).scalar() and current_user.has_permission('change_user_role')
 
     def has_delete_permission(self, obj, data):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == data['user_id']).scalar()
+            .filter(User.id == data['user_id']).scalar() and current_user.has_permission('delete_user_role')
 
     def has_add_permission(self, obj, data):
         return current_user.retail_brand_id == User.query.with_entities(User.retail_brand_id) \
-            .filter(User.id == data['user_id']).scalar()
+            .filter(User.id == data['user_id']).scalar() and current_user.has_permission('add_user_role')
 
 
 class PrinterConfigResource(ModelResource):
